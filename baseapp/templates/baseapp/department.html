@@ -1,0 +1,33 @@
+{% extends 'base.html' %} {% load static %} {% block title %}Departments{% endblock title %} {% block content %}
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-12">
+      <h2 class="mt-4">Departments</h2>
+      <hr />
+      <form method="POST" action="{% url 'department' %}">
+        {% csrf_token %}
+        <div class="row">
+          <div class="col-md-2 mb-4">
+            <label for="slug">Select a Department</label>
+          </div>
+          <div class="col-md-10 mb-4">
+            <select class="form-select" aria-label="Default select example" name="slug">
+              <option selected>Open this select menu</option>
+              {% for department in departments %}
+              <option value="{{ department.slug }}">{{ department.title }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+        <div class="row justify-content-center">
+          <div class="col-md-2 mb-4">
+            <button type="submit" class="btn btn-primary my-3">Submit</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+{% endblock content %}

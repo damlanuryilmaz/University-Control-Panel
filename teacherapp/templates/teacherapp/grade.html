@@ -1,0 +1,54 @@
+{% extends 'base.html' %} {% load static %} {% block title %}Grades{% endblock title%} {% block content %}
+
+<h1 class="text-center mb-4">Assign Grades</h1>
+
+<div class="container">
+  <div class="row">
+    <form method="POST" action="{% url 'grade' %}">
+      {% csrf_token %} {% for lesson in teacher.lesson_of_teacher.all %}
+      <div class="card">
+        <div class="card-header text-center">
+          <strong>{{ lesson.title }}</strong>
+        </div>
+        <ul class="list-group list-group-flush">
+          {% for student in students %}
+          <script>
+            console.log("{{ lesson }}");
+            console.log("{{ student.lesson_student }}");
+          </script>
+          <li class="list-group-item">
+            <div class="row">
+              <div class="col-md-6 text-center">{{ student.user.first_name }} {{ student.user.last_name }}</div>
+              <div class="col-md-3">
+                <select name="grade" class="form-control">
+                  <option value="A">A</option>
+                  <option value="B">B</option>
+                  <option value="C">C</option>
+                  <option value="D">D</option>
+                  <option value="E">E</option>
+                  <option value="F">F</option>
+                </select>
+              </div>
+            </div>
+          </li>
+          {% endfor %}
+          {% if student is None %}
+          <li class="list-group-item">
+            <div class="row">
+              <div class="col-md-6 text-center">No student has been assigned to this lesson yet.</div>
+            </div>
+          </li>
+          {% endif %}
+        </ul>
+      </div>
+      <br />
+      <br />
+      {% endfor %}
+      <div class="card-footer text-center mt-3">
+        <button type="submit" class="btn btn-primary">Submit</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+{%endblock content%}

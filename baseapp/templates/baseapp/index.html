@@ -1,0 +1,35 @@
+{% extends 'base.html' %} {% load static %} {% block title %}Main Page{% endblock title %} {% block content %}
+
+<div class="container mt-5">
+  <div class="row justify-content-center">
+    <div class="col-md-4">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title mb-3">{{ user.status|title }}</h5>
+
+          <h6 class="card-subtitle mb-3 text-muted">{{ user.first_name }} {{ user.last_name}} @{{ user.username }}</h6>
+          <hr />
+          {% if user.status == 'Student' %}
+          <p class="card-text mb-3"><strong>Department:</strong> {{ student.department_of_student }}</p>
+          {% else %}
+          <p class="card-text mb-3"><strong>Lessons:</strong></p>
+          {% for lesson in teacher.lesson_of_teacher.all%}
+          <p class="card-text mb-3">{{ lesson.title }}</p>
+          {% endfor %} {% endif %}
+        </div>
+      </div>
+    </div>
+    {% if user.status == 'Student' %}
+    <div class="col-md-4">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title mb-3">Contact with a Teacher</h5>
+          <a href="{% url 'contact' %}" class="btn btn-primary">Contact</a>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+{% endblock content %}

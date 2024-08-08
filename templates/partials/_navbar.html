@@ -1,0 +1,63 @@
+<nav class="navbar navbar-expand-lg bg-body-tertiary">
+  <div class="container-fluid">
+    {% if user.status == "Teacher" %}
+    <a class="navbar-brand" href="">Teacher</a>
+    {% elif user.status == "Student" %}
+    <a class="navbar-brand" href="">Student</a>
+    {% endif %}
+    <button
+      class="navbar-toggler"
+      type="button"
+      data-bs-toggle="collapse"
+      data-bs-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav mr-auto mb-2 mb-lg-0">
+        <li class="nav-item me-3">
+          <a class="nav-link active" aria-current="page" href="{% url 'index' %}">Home</a>
+        </li>
+        <li class="nav-item me-3">
+          <a class="nav-link active" aria-current="page" href="{% url 'department' %}">Departments</a>
+        </li>
+        {% if user.status == "Teacher" %}
+        <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          Lessons
+        </a>
+        <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+          {% for lesson in teacher.lesson_of_teacher.all %}
+          <a class="dropdown-item" href="{% url 'lesson_list' lesson.id %}">{{ lesson.name }}</a>
+          {% endfor %}
+        </div>
+      </li>
+        <li class="nav-item me-3">
+          <a class="nav-link active" aria-current="page" href="{% url 'grade' %}">Enter Grade</a>
+        </li>
+        <li class="nav-item me-3">
+          <a class="nav-link active" aria-current="page" href="{% url 'message' %}">Messages</a>
+        </li>
+        {% elif user.status == "Student" %}
+        <li class="nav-item me-3">
+          <a class="nav-link active" aria-current="page" href="{% url 'syllabus' %}">Lesson</a>
+        </li>
+        {% endif %}
+        <li class="nav-item">
+          <a class="nav-link" href="">Welcome, {{ user.first_name }}</a>
+        </li>
+      </ul>
+      <ul class="navbar-nav ms-auto">
+        <li class="nav-item me-3">
+          <a class="nav-link" href="{% url 'logout' %}">Logout</a>
+        </li>
+        <li class="nav-item me-3">
+          <a class="nav-link" href="{% url 'register' %}">Register</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>

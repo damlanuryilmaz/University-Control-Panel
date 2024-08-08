@@ -1,0 +1,32 @@
+<div class="container mt-4">
+  <p>You have chosen a total of {{ student.student_ects }} ECTS.</p>
+
+  <div class="row">
+    <div class="col-md-10">
+      <table class="table table-bordered">
+        <thead>
+          <tr>
+            <th scope="col"></th>
+            <th scope="col">Lesson Name</th>
+            <th scope="col">ECTS</th>
+            <th scope="col">Grade</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for lesson in student.student_lessons.all %}
+          <tr>
+            <th scope="row">{{ forloop.counter }}</th>
+            <td>{{ lesson.title }}</td>
+            <td>{{ lesson.ects }}</td>
+            {% if lesson.grade %}
+            <td>Grade</td>
+            {% else %}
+            <td>Not Graded</td>
+            {% endif %}
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
