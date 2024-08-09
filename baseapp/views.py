@@ -9,17 +9,6 @@ from teacherapp.models import CustomUser, Student, Teacher
 # Create class-based view of index page
 
 
-class NavbarView(LoginRequiredMixin, View):
-    def get(self, request):
-        lessons = Teacher.objects.get(
-            user__username=request.user.username).lesson_of_teacher.all()
-        context = {
-            'lessons': lessons,
-        }
-
-        return render(request, 'base.html', context)
-
-
 class IndexView(LoginRequiredMixin, View):
     def get(self, request):
 
@@ -39,6 +28,7 @@ class IndexView(LoginRequiredMixin, View):
             'user': user,
             'student': student,
             'teacher': teacher,
+            'lessons': teacher.lesson_of_teacher.all() if teacher else None,
         }
 
         return render(request, 'baseapp/index.html', context)
@@ -65,3 +55,4 @@ class LessonView(LoginRequiredMixin, View):
             'departments': Department.objects.get(slug=slug),
         }
         return render(request, 'baseapp/lesson.html', context)
+

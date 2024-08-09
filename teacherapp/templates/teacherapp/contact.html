@@ -11,6 +11,7 @@
         <label for="teacher_select">Teachers</label>
 
         <select class="form-control" id="teacher_select" name="teacher_select">
+          <option value="{{ teacher.username }}">All Teacher</option>
           {% for teacher in teachers %}
           <option value="{{ teacher.username }}">{{ teacher.first_name }} {{ teacher.last_name }}</option>
           {% endfor %}

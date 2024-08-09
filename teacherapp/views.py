@@ -6,34 +6,22 @@ from .models import *
 from baseapp.models import *
 
 
-class GradeView(LoginRequiredMixin, View): # get lesson and lıst students for that lesson
+class GradeView(LoginRequiredMixin, View):  # get lesson and lıst students for that lesson
     # create second vıew for gettıng the lıst of lessons gıven by teacher
     def get(self, request):
 
         teacher = Teacher.objects.get(user__username=request.user.username)
-
+        lessons = teacher.lesson_of_teacher.all()
         user = CustomUser.objects.get(username=request.user.username)
-
-
-        first_lesson = teacher.lesson_of_teacher.first()
-
-        if first_lesson:
-            lessons_taught = teacher.lesson_of_teacher.all()
-            print(lessons_taught)
-            # Filter students who are taking any of the lessons taught by the teacher
-            students = Student.objects.filter(
-                student_lessons__in=lessons_taught).distinct()
-        else:
-            students = None
-
-        for student in students:
-            print(student)
+        students = Student.objects.filter(
+            student_lessons__in=lessons).distinct()
 
         context = {
 
             'teacher': teacher,
             'students': students,
             'user': user,
+            'lessons': lessons,
         }
 
         return render(request, 'teacherapp/grade.html', context)
@@ -46,14 +34,21 @@ class GradeView(LoginRequiredMixin, View): # get lesson and lıst students for t
 class SyllabusView(LoginRequiredMixin, View):
     def get(self, request):
 
-        student = Student.objects.get(user__username=request.user.username)
+        try:
+            student = Student.objects.get(user__username=request.user.username)
+            department_ects = Department.objects.get(
+                title=student.department_of_student).capacity
+
+        except:
+            student = None
+            department_ects = None
+
         user = CustomUser.objects.get(username=request.user.username)
 
         context = {
-            'syllabus': Lesson.objects.filter(category=student.department_of_student),
             'student': student,
             'user': user,
-            'department_ects': Department.objects.get(title=student.department_of_student).capacity,
+            'department_ects': department_ects ,
         }
         return render(request, 'teacherapp/syllabus.html', context)
 
@@ -150,13 +145,14 @@ class MessageView(LoginRequiredMixin, View):
             'messages': Contact.objects.filter(message_of_teacher=request.user.id),
             'user': CustomUser.objects.get(username=request.user.username),
         }
-        
+
         return render(request, 'teacherapp/message.html', context)
-    
+
+
 class DeleteMessageView(LoginRequiredMixin, View):
-    def get(self, request, message_id):
+    def get(self, request):
         return render(request, 'teacherapp/delete_message.html')
-    
+
     def post(self, request, id):
         message = Contact.objects.get(id=id)
         message.delete()

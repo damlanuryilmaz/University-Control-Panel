@@ -10,7 +10,7 @@
     </div>
     <div class="col-md-10 mb-4">
       <select class="form-select" multiple aria-label="multiple select example" name="lesson_selected">
-        {% for lesson in syllabus %}
+        {% for lesson in student.department_of_student %}
         <option value="{{ lesson.title }}">{{ lesson.title }} | {{ lesson.ects }} ECTS | {{ lesson.capacity }} capacity</option>
         {% endfor %}
       </select>

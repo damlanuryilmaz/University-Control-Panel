@@ -5,11 +5,12 @@
     <div class="col-md-12">
       <h2 class="mt-4">Syllabus</h2>
       <hr />
-      {% if student.department_of_student is None %}
+      {% if student is None %}
       <p>
         You have not been assigned to any department yet. Please contact the
         administrator
       </p>
+      
       {% elif student.student_ects == 0 %} 
       {% include 'teacherapp/partials/_selection.html' %} {% else %} 
       {% include 'teacherapp/partials/_viewing.html' %} {% endif %}

@@ -25,6 +25,7 @@ class Student(models.Model):
         Department, on_delete=models.CASCADE, blank=True, null=True)
     student_ects = models.IntegerField(default=0)
     student_lessons = models.ManyToManyField(Lesson, blank=True,)
+    student_grade = models.CharField(max_length=2, blank=True, null=True)
 
     def __str__(self):
         return self.user.username
