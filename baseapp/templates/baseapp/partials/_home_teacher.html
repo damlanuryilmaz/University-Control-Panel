@@ -1,0 +1,24 @@
+<div class="col-md-4">
+  <ul class="list-group">
+    {% for student in students_without_department %}
+    <li class="list-group-item">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <form method="POST" action="{% url 'assign_department' %}">
+            {% csrf_token %}
+            <h5 class="card-title mb-3">{{ student.user.first_name}} {{ student.user.last_name }}</h5>
+            <select class="form-select mb-4" aria-label="Default select example" name="department">
+              {% for department in departments %}
+              <option value={{department.id}}>{{ department }}</option>
+              {% endfor %}
+            </select>
+            <input type="hidden" name="username" value="{{ student.user.username }}" />
+            <button type="submit" class="btn btn-primary btn-sm mb-4">Assign Department</button>
+          </form>
+        </div>
+      </div>
+    </li>
+
+    {% endfor %}
+  </ul>
+</div>

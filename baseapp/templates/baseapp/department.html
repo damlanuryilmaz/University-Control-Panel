@@ -13,7 +13,6 @@
           </div>
           <div class="col-md-10 mb-4">
             <select class="form-select" aria-label="Default select example" name="slug">
-              <option selected>Open this select menu</option>
               {% for department in departments %}
               <option value="{{ department.slug }}">{{ department.title }}</option>
               {% endfor %}

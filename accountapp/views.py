@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect
 from django.views import View  # Import the View class from django
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
-from teacherapp.models import CustomUser
+from teacherapp.models import CustomUser, Student
 
 
 # Create your views here.
@@ -57,7 +57,7 @@ class RegisterView(View):
                 else:
                     user = CustomUser.objects.create_user(
                         username=username, email=email, password=password, first_name=firstname, last_name=lastname)
-                    user.save()
+                    student = Student.objects.create(user=user)
                     messages.success(request, 'User created successfully')
                     return redirect('login')
         else:

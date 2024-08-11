@@ -1,6 +1,7 @@
 # Import the render and redirect functions from django
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import render, redirect
+from django.contrib import messages
 from django.views import View  # Import the View class from django
 # Import the Lesson model from the models.py file
 from .models import *
@@ -13,6 +14,8 @@ class IndexView(LoginRequiredMixin, View):
     def get(self, request):
 
         user = CustomUser.objects.get(username=request.user.username)
+        students_without_department = Student.objects.filter(
+            department_request=True)
 
         try:
             teacher = Teacher.objects.get(user__username=request.user.username)
@@ -23,11 +26,14 @@ class IndexView(LoginRequiredMixin, View):
             student = Student.objects.get(user__username=request.user.username)
         except:
             student = None
-
+        
+                
         context = {
             'user': user,
             'student': student,
             'teacher': teacher,
+            'students_without_department': students_without_department,
+            'departments': Department.objects.all(),
             'lessons': teacher.lesson_of_teacher.all() if teacher else None,
         }
 
@@ -56,3 +62,30 @@ class LessonView(LoginRequiredMixin, View):
         }
         return render(request, 'baseapp/lesson.html', context)
 
+
+class DepartmentRequestView(LoginRequiredMixin, View):
+
+    def post(self, request):
+
+        student = Student.objects.get(user__username=request.user.username)
+        student.department_request = True
+        student.save()
+
+        return redirect('index')
+
+
+class AssignDepartmentView(LoginRequiredMixin, View):
+
+    def post(self, request):
+
+        username = request.POST.get('username')
+        department_id = request.POST.get('department')
+        department = Department.objects.get(id=department_id)
+        student = Student.objects.get(user__username=username)
+        student.department_of_student = department
+        student.department_request = False
+        
+        student.save()
+        
+
+        return redirect('index',)

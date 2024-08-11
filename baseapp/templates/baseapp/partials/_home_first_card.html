@@ -1,0 +1,23 @@
+<div class="col-md-4">
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <h5 class="card-title mb-3">{{ user.status|title }}</h5>
+
+      <h6 class="card-subtitle mb-3 text-muted">
+        {{ user.first_name|title }} {{ user.last_name|title }} @{{ user.username }}
+      </h6>
+      <hr />
+      {% if user.status == 'Student' %} 
+      {% if student is None %}
+      <p class="card-text mb-3">You have not been assigned to any department yet. Please contact the administrator.</p>
+      {% else %}
+      <p class="card-text mb-3"><strong>Department:</strong> {{ student.department_of_student }}</p>
+      {% endif %} 
+      {% else %}
+      <p class="card-text mb-3"><strong>Lessons:</strong></p>
+      {% for lesson in teacher.lesson_of_teacher.all%}
+      <p class="card-text mb-3">{{ lesson.title }}</p>
+      {% endfor %} {% endif %}
+    </div>
+  </div>
+</div>

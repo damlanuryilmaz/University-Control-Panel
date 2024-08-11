@@ -2,36 +2,11 @@
 
 <div class="container mt-5">
   <div class="row justify-content-center">
-    <div class="col-md-4">
-      <div class="card shadow-sm">
-        <div class="card-body">
-          <h5 class="card-title mb-3">{{ user.status|title }}</h5>
-
-          <h6 class="card-subtitle mb-3 text-muted">
-            {{ user.first_name|title }} {{ user.last_name|title }} @{{ user.username }}
-          </h6>
-          <hr />
-          {% if user.status == 'Student' %}
-          {% if  %}
-          <p class="card-text mb-3"><strong>Department:</strong> 
-            {{ student.department_of_student }}</p>
-          {% else %}
-          <p class="card-text mb-3"><strong>Lessons:</strong></p>
-          {% for lesson in teacher.lesson_of_teacher.all%}
-          <p class="card-text mb-3">{{ lesson.title }}</p>
-          {% endfor %} {% endif %}
-        </div>
-      </div>
-    </div>
-    {% if user.status == 'Student' %}
-    <div class="col-md-4">
-      <div class="card shadow-sm">
-        <div class="card-body">
-          <h5 class="card-title mb-3">Contact with a Teacher</h5>
-          <a href="{% url 'contact' %}" class="btn btn-primary">Contact</a>
-        </div>
-      </div>
-    </div>
+    {% include 'baseapp/partials/_home_first_card.html' %} 
+    {% if user.status == 'Student' %} 
+    {% include 'baseapp/partials/_home_student.html' %} 
+    {% elif user.status == 'Teacher' %} 
+    {% include 'baseapp/partials/_home_teacher.html' %} 
     {% endif %}
   </div>
 </div>

@@ -27,7 +27,7 @@ class GradeView(LoginRequiredMixin, View):  # get lesson and lıst students for 
         return render(request, 'teacherapp/grade.html', context)
 
     def post(self, request):
-
+        
         return redirect('index')
 
 
@@ -151,7 +151,7 @@ class MessageView(LoginRequiredMixin, View):
 
 class DeleteMessageView(LoginRequiredMixin, View):
     def get(self, request):
-        return render(request, 'teacherapp/delete_message.html')
+        return render(request, 'teacherapp/message.html')
 
     def post(self, request, id):
         message = Contact.objects.get(id=id)

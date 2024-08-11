@@ -26,6 +26,7 @@ class Student(models.Model):
     student_ects = models.IntegerField(default=0)
     student_lessons = models.ManyToManyField(Lesson, blank=True,)
     student_grade = models.CharField(max_length=2, blank=True, null=True)
+    department_request = models.BooleanField(default=False)
 
     def __str__(self):
         return self.user.username
@@ -45,5 +46,4 @@ class Contact(models.Model):
         CustomUser, on_delete=models.CASCADE, blank=True, null=True)
     message_of_student = models.ForeignKey(Student, on_delete=models.CASCADE, blank=True, null=True)
 
-    def __str__(self):
-        return self.name
+
