@@ -1,13 +1,8 @@
-# Import the render and redirect functions from django
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import render, redirect
-from django.contrib import messages
-from django.views import View  # Import the View class from django
-# Import the Lesson model from the models.py file
-from .models import *
-from teacherapp.models import CustomUser, Student, Teacher
-
-# Create class-based view of index page
+from django.views import View
+from .models import Department, Lesson
+from teacherapp.models import CustomUser, Student, Teacher, Grade
 
 
 class IndexView(LoginRequiredMixin, View):
@@ -19,23 +14,22 @@ class IndexView(LoginRequiredMixin, View):
 
         try:
             teacher = Teacher.objects.get(user__username=request.user.username)
-        except:
+        except Teacher.DoesNotExist:
             teacher = None
 
         try:
             student = Student.objects.get(user__username=request.user.username)
-        except:
+        except Student.DoesNotExist:
             student = None
-        
-                
+
         context = {
-            'user': user,
-            'student': student,
-            'teacher': teacher,
-            'students_without_department': students_without_department,
-            'departments': Department.objects.all(),
-            'lessons': teacher.lesson_of_teacher.all() if teacher else None,
-        }
+                'user': user,
+                'student': student,
+                'teacher': teacher,
+                'students_without_department': students_without_department,
+                'departments': Department.objects.all(),
+                'lessons': teacher.lesson_of_teacher.all() if teacher else None,
+            }
 
         return render(request, 'baseapp/index.html', context)
 
@@ -84,8 +78,6 @@ class AssignDepartmentView(LoginRequiredMixin, View):
         student = Student.objects.get(user__username=username)
         student.department_of_student = department
         student.department_request = False
-        
         student.save()
-        
 
         return redirect('index',)

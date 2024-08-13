@@ -28,12 +28,4 @@ class Lesson(models.Model):
         return self.title
 
 
-class Note(models.Model):
-    lesson_name = models.CharField(max_length=150)
-    ects = models.IntegerField()
-    grade = models.CharField(max_length=10)
-
-    def __str__(self):
-        return self.title
-
 

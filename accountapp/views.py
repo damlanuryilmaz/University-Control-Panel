@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from django.views import View  # Import the View class from django
+from django.views import View
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from teacherapp.models import CustomUser, Student
@@ -20,7 +20,7 @@ class LoginView(View):
         try:
             user = CustomUser.objects.get(username=username, password=password)
 
-        except:
+        except CustomUser.DoesNotExist:
             messages.error(request, 'User does not exist')
 
         user = authenticate(request, username=username, password=password)
@@ -35,6 +35,7 @@ class LoginView(View):
 class RegisterView(View):
 
     def get(self, request):
+
         return render(request, 'accountapp/register_page.html')
 
     def post(self, request):
@@ -57,6 +58,8 @@ class RegisterView(View):
                 else:
                     user = CustomUser.objects.create_user(
                         username=username, email=email, password=password, first_name=firstname, last_name=lastname)
+                    user.username = user.username.lower()
+                    user.save()
                     student = Student.objects.create(user=user)
                     messages.success(request, 'User created successfully')
                     return redirect('login')

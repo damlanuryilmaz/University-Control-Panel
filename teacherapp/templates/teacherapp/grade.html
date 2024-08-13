@@ -2,46 +2,94 @@
 
 <div class="container">
   <div class="row">
-    <h2 class="mt-4 mb-4">Assign Grades</h2>
+    <h3 class="mt-4 mb-4">Assign Grades</h3>
     <hr />
-    <form method="POST" action="{% url 'grade' %}">
-      {% csrf_token %} {% for lesson in teacher.lesson_of_teacher.all %}
+
+    {% for lesson in lessons %}
+
+    <ul class="list-group mb-4">
+      <li class="list-group-item list-group-item-primary d-flex justify-content-between align-items-center">
+        <h5>{{ lesson.title }}</h5>
+      </li>
+
       <div class="card">
-        <div class="card-header text-center">
-          <strong>{{ lesson.title }}</strong>
-        </div>
         <ul class="list-group list-group-flush">
           {% for student in students %} {% if lesson in student.student_lessons.all %}
-          <li class="list-group-item">
-            <div class="row">
-              <div class="col-md-6 text-center">{{ student.user.first_name }} {{ student.user.last_name }}</div>
-              <div class="col-md-3">
-                <select name="grade" class="form-control">
-                  <option value="A">A</option>
-                  <option value="B">B</option>
-                  <option value="C">C</option>
-                  <option value="D">D</option>
-                  <option value="E">E</option>
-                  <option value="F">F</option>
-                </select>
-              </div>
-              <div class="col-md-3">
-                <div class="row justify-content-center">
-                  <div class="col-md-2 text-center">
-                    <button type="submit" class="btn btn-primary">Submit</button>
+          <form method="post" action="{% url 'grade' %}">
+            {% csrf_token %}
+
+            <li class="list-group-item">
+              <div class="row">
+                <div class="col-md-5 text-center">{{ student.user.first_name }} {{ student.user.last_name }}</div>
+                <div class="col-md-2">
+                  <select name="grade" class="form-control">
+                    {% for grade_value, grade_label in grade_types %}
+                    <option value="{{ grade_value }}">{{ grade_label }}</option>
+
+                    {% endfor %}
+                  </select>
+                  <input type="hidden" name="lesson" value="{{ lesson.id }}" />
+                  <input type="hidden" name="student" value="{{ student.id }}" />
+                </div>
+                <div class="col-md-3">
+                  <div class="row justify-content-center">
+                    <div class="col-md-2 text-center">
+                      <button
+                        type="submit"
+                        class="btn btn-primary"
+                        onclick="return confirm('Are you sure you want to assign a to {{student.user.first_name}} {{student.user.last_name}}?')"
+                      >
+                        Submit
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          </li>
-
+            </li>
+          </form>
           {% endif %} {% endfor %}
         </ul>
       </div>
       <br />
-      {% endfor %}
-    </form>
-  </div>
-</div>
+    </ul>
 
-{% endblock content %}
+    {% endfor %}
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h4 class="mt-4 mb-4">Grades</h4>
+
+      {% if not grades %}
+      <div class="alert alert-dismissible alert-secondary" role="alert">
+        No grades have been assigned yet. {% else %}
+
+        <table class="table">
+          <thead>
+            <tr>
+              <th scope="col"></th>
+              <th scope="col">Student</th>
+              <th scope="col">Lesson</th>
+              <th scope="col">Grade</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              {% for grade in grades %}
+              <th scope="row"></th>
+
+              <td>{{ grade.student }}</td>
+              <td>{{ grade.lesson }}</td>
+              <td>{{ grade.grade }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  <br />
+  <br />
+
+  {% endblock content %}
+</div>

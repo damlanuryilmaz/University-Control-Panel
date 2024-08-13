@@ -1,17 +1,19 @@
-    <div class="col-md-4">
-      <div class="card shadow-sm">
-        <div class="card-body">
-          <h5 class="card-title mb-3">Contact with a Teacher</h5>
-          {% if not student.department_of_student %}
-          <form method="POST" action="{% url 'department_request' %}">
-            {% csrf_token %}
+<div class="col-md-4">
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <h5 class="card-title mb-3">Contact with a Teacher</h5>
+      {% if not student.department_of_student %}
+      <form method="POST" action="{% url 'department_request' %}">
+        {% csrf_token %} {% if student.department_request == True %}
+        <div class="alert alert-dismissible alert-light">You successfully send the department request!</div>
+        {% else %}
+        <button type="submit" class="btn btn-primary btn-sm">Department Request</button>
+        {% endif %}
+      </form>
 
-            <button type="submit" class="btn btn-primary btn-sm">Department Request</button>
-          </form>
-
-          {% else %}
-          <a href="{% url 'contact' %}" class="btn btn-primary">Contact</a>
-          {% endif %}
-        </div>
-      </div>
+      {% else %}
+      <a href="{% url 'contact' %}" class="btn btn-primary">Contact</a>
+      {% endif %}
     </div>
+  </div>
+</div>

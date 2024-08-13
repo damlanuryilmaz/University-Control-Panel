@@ -9,11 +9,17 @@
             <h5 class="card-title mb-3">{{ student.user.first_name}} {{ student.user.last_name }}</h5>
             <select class="form-select mb-4" aria-label="Default select example" name="department">
               {% for department in departments %}
-              <option value={{department.id}}>{{ department }}</option>
+              <option value="{{department.id}}">{{ department }}</option>
               {% endfor %}
             </select>
             <input type="hidden" name="username" value="{{ student.user.username }}" />
-            <button type="submit" class="btn btn-primary btn-sm mb-4">Assign Department</button>
+            <button
+              type="submit"
+              class="btn btn-primary btn-sm mb-4"
+              onclick="return confirm('Are you sure you want to assign department to {{student.user.first_name|title}} {{student.user.last_name|title}}?')"
+            >
+              Assign Department
+            </button>
           </form>
         </div>
       </div>
