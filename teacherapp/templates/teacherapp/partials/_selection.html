@@ -1,27 +1,20 @@
-<p>You must choose a maximum of {{ department_ects }} ECTS.</p>
+{% load crispy_forms_tags %}
+<p>You must choose a maximum of {{ department_capacity }} ECTS.</p>
 <br />
 <form method="POST" action="{% url 'syllabus' %}">
-  {% csrf_token %} {% if error %}
-  <div class="alert alert-danger" role="alert">{{ error }}</div>
-  {% endif %}
+  {% csrf_token %}
+  <div class="row ">
+    <div class="col-md-4">
+      {{ form|crispy }}</div>
+      
+  </div>
   <div class="row">
     <div class="col-md-2 mb-4">
-      <label for="lesson_selected">Select Lessons:</label>
+      <button type="submit" class="btn btn-primary">Submit</button>
     </div>
-    <div class="col-md-10 mb-4">
-      <select class="form-select" multiple aria-label="multiple select example" name="lesson_selected">
-        {% for lesson in student.department_of_student %}
-        <option value="{{ lesson.title }}">{{ lesson.title }} | {{ lesson.ects }} ECTS | {{ lesson.capacity }} capacity</option>
-        {% endfor %}
-      </select>
-    </div>
-    <div class="row justify-content-center">
-      <div class="col-md-2 mb-4">
-        <button type="submit" class="btn btn-primary">Submit</button>
-      </div>
-    </div>
-    {% for failed_lesson in failed_lessons %}
-  <p class="text">{{ failed_lesson }}'s capacity is full!</p>
-  {% endfor %}
   </div>
 </form>
+<br />
+<br />
+<br />
+<br />

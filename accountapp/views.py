@@ -1,71 +1,59 @@
 from django.shortcuts import render, redirect
 from django.views import View
 from django.contrib import messages
-from django.contrib.auth import authenticate, login, logout
-from teacherapp.models import CustomUser, Student
+from django.contrib.auth import login, logout
+from accountapp.models import Student
+from .forms import RegistrationForm
+from django.contrib.auth.forms import AuthenticationForm
 
 
-# Create your views here.
+class RegisterView(View):  # RegisterView from UserCreationForm
 
-
-class LoginView(View):
     def get(self, request):
-        return render(request, 'accountapp/login_page.html')
+        form = RegistrationForm()
+
+        context = {
+            'form': form
+        }
+        return render(request, 'accountapp/register_page.html', context)
+
+    def post(self, request):
+        form = RegistrationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            Student.objects.create(user=user)
+            messages.success(request, 'User created successfully')
+            return redirect('login')
+        else:
+            context = {
+                'form': form
+            }
+            return render(request, 'accountapp/register_page.html', context)
+
+
+class LoginView(View):  # LoginView from AuthenticationForm
+    def get(self, request):
+
+        form = AuthenticationForm()
+        context = {
+            'form': form
+        }
+        return render(request, 'accountapp/login_page.html', context)
 
     def post(self, request):
 
-        username = request.POST.get('username')
-        password = request.POST.get('password')
+        form = AuthenticationForm(request.POST, data=request.POST)
 
-        try:
-            user = CustomUser.objects.get(username=username, password=password)
-
-        except CustomUser.DoesNotExist:
-            messages.error(request, 'User does not exist')
-
-        user = authenticate(request, username=username, password=password)
-
-        if user is not None:
+        if form.is_valid():
+            user = form.get_user()
             login(request, user)
             return redirect('index')
-
-        return redirect('login')
-
-
-class RegisterView(View):
-
-    def get(self, request):
-
-        return render(request, 'accountapp/register_page.html')
-
-    def post(self, request):
-        firstname = request.POST.get('firstname')
-        lastname = request.POST.get('lastname')
-        username = request.POST.get('username')
-        email = request.POST.get('email')
-        password = request.POST.get('password')
-        repassword = request.POST.get('repassword')
-
-        if password == repassword:
-            if CustomUser.objects.filter(username=username).exists():
-                messages.error(request, 'Username already exists')
-                return render(request, 'accountapp/register_page.html',)
-            else:
-                if CustomUser.objects.filter(email=email).exists():
-                    messages.error(request, 'Email already exists')
-                    return render(request, 'accountapp/register_page.html',)
-
-                else:
-                    user = CustomUser.objects.create_user(
-                        username=username, email=email, password=password, first_name=firstname, last_name=lastname)
-                    user.username = user.username.lower()
-                    user.save()
-                    student = Student.objects.create(user=user)
-                    messages.success(request, 'User created successfully')
-                    return redirect('login')
         else:
-            messages.error(request, 'Passwords do not match')
-            return render(request, 'accountapp/register_page.html',)
+
+            context = {
+                'form': form
+            }
+            return render(request, 'accountapp/login_page.html', context)
 
 
 class LogoutView(View):

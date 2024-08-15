@@ -11,6 +11,7 @@ class Department(models.Model):
                             blank=True, null=False, editable=False)
 
     def save(self, *args, **kwargs):
+        # Create a slug and use it for the url
         self.slug = slugify(self.title)
         super(Department, self).save(*args, **kwargs)
 
@@ -22,10 +23,8 @@ class Lesson(models.Model):
     title = models.CharField(max_length=100)
     ects = models.IntegerField()
     category = models.ManyToManyField(Department)
-    capacity = models.IntegerField(default=3)
+    capacity = models.IntegerField(default=3)  # Course capacity is full
 
     def __str__(self):
-        return self.title
-
-
-
+        # Return a query string and show in the screen with that format
+        return f'{self.title} | {self.ects} ECTS'

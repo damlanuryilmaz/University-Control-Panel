@@ -15,21 +15,16 @@
         <tbody>
           {% for lesson in student.student_lessons.all %}
           <tr>
-            <script>
-              console.log("{{ grades }}");
-            </script>
-
             <th scope="row">{{ forloop.counter }}</th>
             <td>{{ lesson.title }}</td>
             <td>{{ lesson.ects }}</td>
-            {% for grade in grades %}
-            {% if lesson == grade.lesson %}
-            <td>{{ grade.grade }}</td>
-            {% else %}
-            <td>Not Graded</td>
-            {% endif %}
-            {% endfor %}
-            
+            <td>
+              {% for grade in grades %} {% if lesson == grade.lesson %} {{ grade.grade }} {% endif %} {% endfor %}
+            </td>
+
+            <script>
+              console.log("{{ lesson }}");
+            </script>
           </tr>
           {% endfor %}
         </tbody>

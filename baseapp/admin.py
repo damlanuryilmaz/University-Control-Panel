@@ -1,11 +1,11 @@
 from django.contrib import admin
-from .models import *
+from .models import Lesson, Department
 
 # Register your models here.
 
 
 class LessonAdmin(admin.ModelAdmin):
-    list_display = ['title', ]
+    list_display = ['title', 'ects']
     list_filter = ['category']
     search_fields = ['title']
 

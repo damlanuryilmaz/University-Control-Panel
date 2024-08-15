@@ -2,7 +2,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import render, redirect
 from django.views import View
 from .models import Department, Lesson
-from teacherapp.models import CustomUser, Student, Teacher, Grade
+from accountapp.models import CustomUser, Student, Teacher
 
 
 class IndexView(LoginRequiredMixin, View):
@@ -28,7 +28,9 @@ class IndexView(LoginRequiredMixin, View):
                 'teacher': teacher,
                 'students_without_department': students_without_department,
                 'departments': Department.objects.all(),
-                'lessons': teacher.lesson_of_teacher.all() if teacher else None,
+                'lessons': (
+                    teacher.lesson_of_teacher.all() if teacher else None
+                ),
             }
 
         return render(request, 'baseapp/index.html', context)

@@ -1,9 +1,10 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import render, redirect
 from django.views import View
-from .models import Student, Teacher, Contact, Grade
-from baseapp.models import Lesson, Department
-from teacherapp.models import CustomUser
+from .models import Contact, Grade
+from baseapp.models import Lesson
+from accountapp.models import CustomUser, Student, Teacher
+from .forms import StudentLessonForm
 
 
 class GradeView(LoginRequiredMixin, View):
@@ -31,7 +32,7 @@ class GradeView(LoginRequiredMixin, View):
         grade_value = request.POST.get('grade')
         student = Student.objects.get(id=student_id)
         lesson = Lesson.objects.get(id=lesson_id)
-        Grade.objects.update_or_create(student=student, lesson=lesson, 
+        Grade.objects.update_or_create(student=student, lesson=lesson,
                                        defaults={'grade': grade_value})
 
         return redirect('grade')
@@ -39,94 +40,44 @@ class GradeView(LoginRequiredMixin, View):
 
 class SyllabusView(LoginRequiredMixin, View):
     def get(self, request):
+        student = Student.objects.get(user=request.user)
+        form = StudentLessonForm(user=request.user)
+        grades = Grade.objects.filter(student=student)
 
         try:
-            student = Student.objects.get(user__username=request.user.username)
-            department_ects = Department.objects.get(
-                title=student.department_of_student
-            ).capacity
-
-        except Student.DoesNotExist:
-            student = None
-            department_ects = None
-
-        user = CustomUser.objects.get(username=request.user.username)
-        grades = Grade.objects.filter(student=student) if student else None
-        print(grades)
+            department_capacity = student.department_of_student.capacity
+        except AttributeError:
+            department_capacity = None
 
         context = {
+            'form': form,
             'student': student,
-            'user': user,
-            'department_ects': department_ects,
+            'department_capacity': department_capacity,
             'grades': grades,
         }
         return render(request, "teacherapp/syllabus.html", context)
 
-    def post(request):
+    def post(self, request):
 
-        student = Student.objects.get(user__username=request.user.username)
-        user = CustomUser.objects.get(username=request.user.username)
-        department_ects = Department.objects.get(
-            title=student.department_of_student
-        ).capacity
+        student = Student.objects.get(user=request.user)
+        form = StudentLessonForm(request.POST, user=request.user)
+        if form.is_valid():
 
-        selected_lesson = request.POST.getlist("lesson_selected")
+            for lesson in form.cleaned_data['student_lessons']:
+                student.student_lessons.add(lesson)
+                lesson.capacity -= 1
+                lesson.save()
 
-        total_ects = 0
-
-        for lesson in selected_lesson:
-            lesson = Lesson.objects.get(title=lesson)
-            total_ects += lesson.ects
-
-        if total_ects > department_ects:
-            context = {
-                "syllabus": Lesson.objects.filter(
-                    category=student.department_of_student),
-                "student": student,
-                "user": user,
-                "department_ects": Department.objects.get(
-                    title=student.department_of_student
-                ).capacity,
-                "error": "You have to select lessons according to your department capacity",
-            }
-
-            return render(request, "teacherapp/syllabus.html", context)
-
-        for lesson_title in selected_lesson:
-            lesson = Lesson.objects.get(title=lesson_title)
-            if lesson.capacity == 0:
-                failed_lesson = Lesson.objects.filter(
-                    category=student.department_of_student
-                )
-                context = {
-                    "syllabus": Lesson.objects.filter(
-                        category=student.department_of_student
-                    ),
-                    "student": student,
-                    "user": user,
-                    "department_ects": Department.objects.get(
-                        title=student.department_of_student
-                    ).capacity,
-                    "failed_lessons": failed_lesson,
-                    "error": "Course capacity is full",
-                }
-
-                return render(request, "teacherapp/syllabus.html", context)
-
-        # Save each lesson to the student's lesson list
-        for lesson_title in selected_lesson:
-            lesson = Lesson.objects.get(title=lesson_title)
-
-            lesson.capacity -= 1
-            lesson.save()
-
-            student.student_lessons.add(lesson)
+            student.student_ects = form.total_ects
             student.save()
 
-        student.student_ects = total_ects
-        student.save()
+            return redirect('syllabus')
 
-        return redirect("syllabus")
+        context = {
+            'form': form,
+            'student': student,
+        }
+        return render(request, "teacherapp/syllabus.html", context)
 
 
 class ContactView(LoginRequiredMixin, View):
