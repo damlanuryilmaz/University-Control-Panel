@@ -1,0 +1,48 @@
+{% extends "base.html" %} {% load static %} {% load crispy_forms_tags %} {% block title %}Student{% endblock title %} {% block content %}
+
+<div class="container mt-5">
+  <div class="row">
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-body">
+          <h4 class="card-title mb-4">Department Request</h4>
+          {% if not students %}
+          <div class="d-flex justify-content-center">
+            <div class="alert alert-info" role="alert">No request available. It is empty.</div>
+          </div>
+          {% else %} {% for student in students %}
+
+          <div class="card border-dark mb-3">
+            <div class="card-header"><strong>{{ student.user.first_name }} {{student.user.last_name }}</strong></div>
+            <div class="card-body">
+              <form method="POST" action="{% url 'department_request' %}">
+                {% csrf_token %}
+                <input type="hidden" name="student" value="{{ student.id }}" />
+                {{ form|crispy }}
+
+                <button
+                  type="submit"
+                  class="btn btn-primary btn-sm mb-10"
+                  onclick="return confirm('Are you sure you want to assign department to {{student.user.first_name|title}} {{student.user.last_name|title}}?')"
+                >
+                  Assign Department
+                </button>
+              </form>
+            </div>
+          </div>
+
+          {% endfor %} {% endif %}
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-body">
+          <h4 class="card-title mb-4">Department Request</h4>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {% endblock content %}
+</div>

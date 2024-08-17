@@ -1,56 +1,75 @@
 <nav class="navbar navbar-expand-lg bg-primary" data-bs-theme="dark">
-    <div class="container-fluid">
+  <div class="container-fluid">
+    {% if user.status == "Teacher" %}
+    <a class="navbar-brand">Teacher</a>
+    {% elif user.status == "Student" %}
+    <a class="navbar-brand">Student</a>
+    {% elif user.status == 'Admin' %}
+    <a class="navbar-brand">Admin</a>
+    {% endif %}
+    <button
+      class="navbar-toggler"
+      type="button"
+      data-bs-toggle="collapse"
+      data-bs-target="#navbarColor01"
+      aria-controls="navbarColor01"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarColor01">
+      <ul class="navbar-nav me-3">
+        <li class="nav-item">
+          <a class="nav-link me-3" href="{% url 'index' %}">Home</a>
+        </li>
+        <li class="nav-item me-3">
+          <a class="nav-link" href="{% url 'department' %}">Departments</a>
+        </li>
         {% if user.status == "Teacher" %}
-            <a class="navbar-brand">Teacher</a>
+        <li class="nav-item me-3">
+          <a class="nav-link" href="{% url 'grade' %}">Enter Grade</a>
+        </li>
+        <li class="nav-item me-3">
+          <a class="nav-link" href="{% url 'message' %}">Messages</a>
+        </li>
         {% elif user.status == "Student" %}
-            <a class="navbar-brand">Student</a>
+        <li class="nav-item me-3">
+          <a class="nav-link" href="{% url 'syllabus' %}">Course</a>
+        </li>
+        {% elif user.status == 'Admin' %}
+        <li class="nav-item dropdown me-3">
+          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            Student
+          </a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="{% url 'department_request' %}">Department Request</a></li>
+          </ul>
+        </li>
+        <li class="nav-item dropdown me-3">
+          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            Teacher
+          </a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="{% url 'assign_lesson' %}">Assign Lesson</a></li>
+          </ul>
+        </li>
+        {% endif %} {% if not user.status == 'Admin' %}
+        <li class="nav-item">
+          <a class="nav-link">Welcome, {{ user.first_name|title }}</a>
+        </li>
         {% endif %}
-        <button
-                class="navbar-toggler"
-                type="button"
-                data-bs-toggle="collapse"
-                data-bs-target="#navbarColor01"
-                aria-controls="navbarColor01"
-                aria-expanded="false"
-                aria-label="Toggle navigation"
-        >
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarColor01">
-            <ul class="navbar-nav me-3">
-                <li class="nav-item">
-                    <a class="nav-link me-3" href="{% url 'index' %}">Home</a>
-                </li>
-                <li class="nav-item me-3">
-                    <a class="nav-link" href="{% url 'department' %}">Departments</a>
-                </li>
-                {% if user.status == "Teacher" %}
-                    <li class="nav-item me-3">
-                        <a class="nav-link" href="{% url 'grade' %}">Enter Grade</a>
-                    </li>
-                    <li class="nav-item me-3">
-                        <a class="nav-link" href="{% url 'message' %}">Messages</a>
-                    </li>
-                {% elif user.status == "Student" %}
-                    <li class="nav-item me-3">
-                        <a class="nav-link" href="{% url 'syllabus' %}">Lesson</a>
-                    </li>
-                {% endif %}
-                <li class="nav-item">
-                    <a class="nav-link">Welcome, {{ user.first_name|title }}</a>
-                </li>
-            </ul>
-            <ul class="navbar-nav ms-auto">
-                <li class="nav-item me-3">
-                    <a class="nav-link" href="{% url 'logout' %}">Logout</a>
-                </li>
-                {% if user.status == 'Student' %}
-                    <li class="nav-item me-3">
-                        <a class="nav-link" href="{% url 'register' %}">Register</a>
-                    </li>
-                {% endif %}
-            </ul>
-        </div>
+      </ul>
+      <ul class="navbar-nav ms-auto">
+        <li class="nav-item me-3">
+          <a class="nav-link" href="{% url 'logout' %}">Logout</a>
+        </li>
+        {% if user.status == 'Student' %}
+        <li class="nav-item me-3">
+          <a class="nav-link" href="{% url 'register' %}">Register</a>
+        </li>
+        {% endif %}
+      </ul>
     </div>
+  </div>
 </nav>
-

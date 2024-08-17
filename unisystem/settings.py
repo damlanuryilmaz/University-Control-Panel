@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'baseapp',
     'accountapp',
     'teacherapp',
+    'adminapp',
 
     'crispy_forms',
     'crispy_bootstrap5',

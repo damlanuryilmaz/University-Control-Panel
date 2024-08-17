@@ -1,6 +1,6 @@
-from django.db import models
 from django.contrib.auth.models import AbstractUser
 from baseapp.models import Department, Lesson
+from django.db import models
 
 
 class CustomUser(AbstractUser):
@@ -25,6 +25,8 @@ class Student(models.Model):
     student_lessons = models.ManyToManyField(Lesson, blank=True,
                                              through='StudentLesson')
     department_request = models.BooleanField(default=False)
+    adviser = models.ForeignKey('Teacher', on_delete=models.CASCADE,
+                                blank=True, null=True)
 
     def __str__(self):
         return self.user.username

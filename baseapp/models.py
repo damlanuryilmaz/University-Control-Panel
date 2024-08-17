@@ -1,8 +1,6 @@
 from django.db import models
 from django.utils.text import slugify
 
-# Create your models here.
-
 
 class Department(models.Model):
     title = models.CharField(max_length=150)
@@ -23,8 +21,8 @@ class Lesson(models.Model):
     title = models.CharField(max_length=100)
     ects = models.IntegerField()
     category = models.ManyToManyField(Department)
-    capacity = models.IntegerField(default=3)  # Course capacity is full
+    capacity = models.IntegerField(default=3)  # Course capacity
 
     def __str__(self):
         # Return a query string and show in the screen with that format
-        return f'{self.title} | {self.ects} ECTS'
+        return f'{self.title} | {self.ects} ECTS | {self.capacity} Capacity'

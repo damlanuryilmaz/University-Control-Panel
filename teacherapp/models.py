@@ -1,8 +1,6 @@
-from django.db import models
-from baseapp.models import Lesson
 from accountapp.models import CustomUser, Student
-
-# Create your models here.
+from baseapp.models import Lesson
+from django.db import models
 
 
 class Contact(models.Model):

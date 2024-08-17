@@ -1,14 +1,13 @@
-from django.shortcuts import render, redirect
-from django.views import View
-from django.contrib import messages
+from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import login, logout
+from django.shortcuts import render, redirect
 from accountapp.models import Student
 from .forms import RegistrationForm
-from django.contrib.auth.forms import AuthenticationForm
+from django.contrib import messages
+from django.views import View
 
 
 class RegisterView(View):  # RegisterView from UserCreationForm
-
     def get(self, request):
         form = RegistrationForm()
 

@@ -1,11 +1,11 @@
+from accountapp.models import CustomUser, Student, Teacher
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import render, redirect
-from django.views import View
 from .models import Department, Lesson
-from accountapp.models import CustomUser, Student, Teacher
+from django.views import View
 
 
-class IndexView(LoginRequiredMixin, View):
+class IndexView(LoginRequiredMixin, View):  # Main page
     def get(self, request):
 
         user = CustomUser.objects.get(username=request.user.username)
@@ -23,20 +23,20 @@ class IndexView(LoginRequiredMixin, View):
             student = None
 
         context = {
-                'user': user,
-                'student': student,
-                'teacher': teacher,
-                'students_without_department': students_without_department,
-                'departments': Department.objects.all(),
-                'lessons': (
-                    teacher.lesson_of_teacher.all() if teacher else None
-                ),
-            }
+            'user': user,
+            'student': student,
+            'teacher': teacher,
+            'students_without_department': students_without_department,
+            'departments': Department.objects.all(),
+            'lessons': (
+                teacher.lesson_of_teacher.all() if teacher else None
+            ),
+        }
 
         return render(request, 'baseapp/index.html', context)
 
 
-class DepartmentView(LoginRequiredMixin, View):
+class DepartmentView(LoginRequiredMixin, View):  # Select the department
     def get(self, request):
         context = {
             'departments': Department.objects.all(),
@@ -46,13 +46,16 @@ class DepartmentView(LoginRequiredMixin, View):
     def post(self, request,):
 
         slug = request.POST.get('slug')
+        # Get the slug of the department to send the lesson page
         return redirect('lesson', slug=slug)
 
 
 class LessonView(LoginRequiredMixin, View):
+    # Show the lessons of the department
     def get(self, request, slug):
         context = {
             'lessons': Lesson.objects.filter(category__slug=slug),
+            # Get the lessons of the department with the slug
             'all_lessons': Lesson.objects.all(),
             'departments': Department.objects.get(slug=slug),
         }
@@ -60,26 +63,11 @@ class LessonView(LoginRequiredMixin, View):
 
 
 class DepartmentRequestView(LoginRequiredMixin, View):
+    # Send a request to any teacher
 
     def post(self, request):
-
         student = Student.objects.get(user__username=request.user.username)
         student.department_request = True
         student.save()
 
         return redirect('index')
-
-
-class AssignDepartmentView(LoginRequiredMixin, View):
-
-    def post(self, request):
-
-        username = request.POST.get('username')
-        department_id = request.POST.get('department')
-        department = Department.objects.get(id=department_id)
-        student = Student.objects.get(user__username=username)
-        student.department_of_student = department
-        student.department_request = False
-        student.save()
-
-        return redirect('index',)

@@ -1,10 +1,12 @@
-from django import forms
 from accountapp.models import Student
 from baseapp.models import Lesson
+from django import forms
 
 
 class StudentLessonForm(forms.ModelForm):
+    # Form for students to select lessons
     class Meta:
+        # Subclass of ModelForm
         model = Student
         fields = ['student_lessons']
         widgets = {
@@ -16,14 +18,15 @@ class StudentLessonForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop('user', None)
-        super(StudentLessonForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
+        # Used super() cus py3 allowed
 
         if self.user:
             student = Student.objects.get(user=self.user)
             self.fields['student_lessons'].queryset = Lesson.objects.filter(
                 category=student.department_of_student)
 
-    def capacity_check(self, student_lessons):
+    def capacity_check(self, student_lessons):  # Department capacity check
         student = Student.objects.get(user=self.user)
         total_ects = 0
         department_capacity = student.department_of_student.capacity
@@ -36,7 +39,7 @@ class StudentLessonForm(forms.ModelForm):
 
         self.total_ects = total_ects
 
-    def ects_check(self, student_lessons):
+    def ects_check(self, student_lessons):  # Course capacity check
         if not student_lessons:
             raise forms.ValidationError(
                 'You have to select at least one lesson.')

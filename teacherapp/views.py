@@ -1,13 +1,13 @@
+from accountapp.models import CustomUser, Student, Teacher
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import render, redirect
-from django.views import View
+from .forms import StudentLessonForm
 from .models import Contact, Grade
 from baseapp.models import Lesson
-from accountapp.models import CustomUser, Student, Teacher
-from .forms import StudentLessonForm
+from django.views import View
 
 
-class GradeView(LoginRequiredMixin, View):
+class GradeView(LoginRequiredMixin, View):  # For teachers to assign grades
     def get(self, request):
 
         teacher = Teacher.objects.get(user__username=request.user.username)
@@ -34,6 +34,7 @@ class GradeView(LoginRequiredMixin, View):
         lesson = Lesson.objects.get(id=lesson_id)
         Grade.objects.update_or_create(student=student, lesson=lesson,
                                        defaults={'grade': grade_value})
+        # Update_or_create cus it's possible to change the grade
 
         return redirect('grade')
 
@@ -47,7 +48,7 @@ class SyllabusView(LoginRequiredMixin, View):
         try:
             department_capacity = student.department_of_student.capacity
         except AttributeError:
-            department_capacity = None
+            department_capacity = None  # If student has no department
 
         context = {
             'form': form,
@@ -61,15 +62,18 @@ class SyllabusView(LoginRequiredMixin, View):
 
         student = Student.objects.get(user=request.user)
         form = StudentLessonForm(request.POST, user=request.user)
+
         if form.is_valid():
+            student.student_ects = form.total_ects
+            # Assign total ECTS to student
+            student.save()
 
             for lesson in form.cleaned_data['student_lessons']:
                 student.student_lessons.add(lesson)
+                # Add selected lessons to student
                 lesson.capacity -= 1
+                # Decrease the capacity of the lesson
                 lesson.save()
-
-            student.student_ects = form.total_ects
-            student.save()
 
             return redirect('syllabus')
 
@@ -77,10 +81,12 @@ class SyllabusView(LoginRequiredMixin, View):
             'form': form,
             'student': student,
         }
+
         return render(request, "teacherapp/syllabus.html", context)
 
 
 class ContactView(LoginRequiredMixin, View):
+    # Send the message to the teacher
     def get(self, request):
 
         context = {
@@ -96,6 +102,7 @@ class ContactView(LoginRequiredMixin, View):
         message = request.POST.get("message")
 
         if not message:
+            # Check if the message box is empty
             context = {
                 "teachers": CustomUser.objects.filter(status="Teacher"),
                 "error": "Please enter a message.",
@@ -113,6 +120,7 @@ class ContactView(LoginRequiredMixin, View):
 
 
 class MessageView(LoginRequiredMixin, View):
+    # Show the messages that the teacher received
     def get(self, request):
 
         context = {
