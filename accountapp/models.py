@@ -45,4 +45,4 @@ class Teacher(models.Model):
     lesson_of_teacher = models.ManyToManyField(Lesson, blank=True,)
 
     def __str__(self):
-        return self.user.username
+        return f'{self.user.first_name} {self.user.last_name}'

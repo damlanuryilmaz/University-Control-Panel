@@ -1,1 +1,28 @@
-{% extends "base.html" %} {% load static %} {% block content %} {% endblock content %}
+{% load static %} {% load crispy_forms_tags %} 
+{% if not students_wo_adviser %}
+<div class="d-flex justify-content-center">
+  <div class="alert alert-info" role="alert">All Students Assigned.</div>
+</div>
+{% else %}
+{% for student in students_wo_adviser %}
+
+          <div class="card border-dark mb-3">
+            <div class="card-header"><strong>{{ student.user.first_name }} {{student.user.last_name }}</strong></div>
+            <div class="card-body">
+              <form method="POST" action="{% url 'assign_adviser' %}">
+                {% csrf_token %}
+                <input type="hidden" name="student" value="{{ student.id }}" />
+                {{ adviserform|crispy }}
+
+                <button
+                  type="submit"
+                  class="btn btn-primary btn-sm mb-10"
+                  onclick="return confirm('Are you sure you want to assign department to {{student.user.first_name|title}} {{student.user.last_name|title}}?')"
+                >
+                  Assign Department
+                </button>
+              </form>
+            </div>
+          </div>
+{% endfor%}
+{% endif %}
