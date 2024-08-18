@@ -16,7 +16,6 @@ class DepartmentRequest(LoginRequiredMixin, View):
         students_wo_adviser = Student.objects.filter(adviser=None)
         form = DepartmentRequestForm()
         adviserform = AssignAdviserForm()
-        print(students_wo_adviser)
 
         context = {
             'form': form,
@@ -25,7 +24,7 @@ class DepartmentRequest(LoginRequiredMixin, View):
             'students_wo_adviser': students_wo_adviser
         }
 
-        return render(request, "adminapp/department_request.html", context)
+        return render(request, "adminapp/department_and_adviser.html", context)
 
     def post(self, request):
 
@@ -47,7 +46,7 @@ class DepartmentRequest(LoginRequiredMixin, View):
                 'students': students,
                 'form': form
             }
-            return render(request, "adminapp/department_request.html", context)
+            return render(request, "adminapp/department_and_adviser.html", context)
 
 
 class AssignAdviser(LoginRequiredMixin, View):

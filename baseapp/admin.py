@@ -1,11 +1,11 @@
 from django.contrib import admin
-from .models import Lesson, Department
+from .models import Lesson, Department, CourseHour
 
 # Register your models here.
 
 
 class LessonAdmin(admin.ModelAdmin):
-    list_display = ['title', 'ects']
+    list_display = ['title', 'ects', 'course_hour']
     list_filter = ['category']
     search_fields = ['title']
 
@@ -17,3 +17,4 @@ class DepartmentAdmin(admin.ModelAdmin):
 
 admin.site.register(Lesson, LessonAdmin)
 admin.site.register(Department, DepartmentAdmin)
+admin.site.register(CourseHour)

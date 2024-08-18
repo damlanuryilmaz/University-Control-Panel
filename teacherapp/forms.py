@@ -49,10 +49,19 @@ class StudentLessonForm(forms.ModelForm):
                 raise forms.ValidationError(
                     f'Course capacity is full: {lesson.title}')
 
+    def course_hour_check(self, student_lessons):  # Course hour check
+        course_hour_set = set()
+        for lesson in student_lessons:
+            if lesson.course_hour in course_hour_set:
+                raise forms.ValidationError(
+                    f'Course hour conflict: {lesson.course_hour}')
+            course_hour_set.add(lesson.course_hour)
+
     def clean(self):
         cleaned_data = super().clean()
         student_lessons = self.cleaned_data.get('student_lessons')
         self.ects_check(student_lessons)
         self.capacity_check(student_lessons)
+        self.course_hour_check(student_lessons)
 
         return cleaned_data

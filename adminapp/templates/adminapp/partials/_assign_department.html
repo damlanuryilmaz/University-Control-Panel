@@ -2,20 +2,20 @@
 <div class="col-md-6">
   <div class="card">
     <div class="card-body">
-      <h4 class="card-title mb-4">Assign Adviser</h4>
-      {% if not students_wo_adviser %}
+      <h4 class="card-title mb-4">Department Request</h4>
+      {% if not students %}
       <div class="d-flex justify-content-center">
-        <div class="alert alert-info" role="alert">All students assigned.</div>
+        <div class="alert alert-info" role="alert">No request available.</div>
       </div>
-      {% else %} {% for student in students_wo_adviser %}
+      {% else %} {% for student in students %}
 
       <div class="card border-dark mb-3">
         <div class="card-header"><strong>{{ student.user.first_name }} {{student.user.last_name }}</strong></div>
         <div class="card-body">
-          <form method="POST" action="{% url 'assign_adviser' %}">
+          <form method="POST" action="{% url 'department_request' %}">
             {% csrf_token %}
             <input type="hidden" name="student" value="{{ student.id }}" />
-            {{ adviserform|crispy }}
+            {{ form|crispy }}
 
             <button
               type="submit"
@@ -27,7 +27,8 @@
           </form>
         </div>
       </div>
-      {% endfor%} {% endif %}
+
+      {% endfor %} {% endif %}
     </div>
   </div>
 </div>
