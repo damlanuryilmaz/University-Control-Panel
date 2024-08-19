@@ -1,7 +1,7 @@
 from .forms import DepartmentRequestForm, AssignAdviserForm
 from django.contrib.auth.mixins import LoginRequiredMixin
+from accountapp.models import Student, Teacher
 from django.shortcuts import render, redirect
-from accountapp.models import Student
 from django.views import View
 
 
@@ -14,17 +14,24 @@ class DepartmentRequest(LoginRequiredMixin, View):
     def get(self, request):
         students = Student.objects.filter(department_request=True)
         students_wo_adviser = Student.objects.filter(adviser=None)
+        teachers = Teacher.objects.all()
         form = DepartmentRequestForm()
         adviserform = AssignAdviserForm()
 
         context = {
             'form': form,
-            'adviserform': adviserform,
             'students': students,
-            'students_wo_adviser': students_wo_adviser
+            'students_wo_adviser': students_wo_adviser,
+            'teacher': teachers,
+            'adviserform': adviserform,
+            
         }
 
-        return render(request, "adminapp/department_and_adviser.html", context)
+        return render(
+            request,
+            "adminapp/department_and_adviser.html",
+            context
+        )
 
     def post(self, request):
 
@@ -46,17 +53,19 @@ class DepartmentRequest(LoginRequiredMixin, View):
                 'students': students,
                 'form': form
             }
-            return render(request, "adminapp/department_and_adviser.html", context)
+            return render(request,
+                          "adminapp/department_and_adviser.html",
+                          context)
 
 
 class AssignAdviser(LoginRequiredMixin, View):
     def post(self, request):
         form = AssignAdviserForm(request.POST)
-        
+
         if form.is_valid():
             student_id = request.POST.get('student')
             student = Student.objects.get(id=student_id)
             student.adviser = form.cleaned_data['adviser']
             student.save()
-            
+
         return redirect('department_request')

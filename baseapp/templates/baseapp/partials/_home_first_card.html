@@ -13,11 +13,12 @@
       {% else %}
       <p class="card-text mb-3"><strong>Department:</strong> {{ student.department_of_student }}</p>
       {% endif %} 
-      {% else %}
+      {% elif user.status == 'Teacher' %}
       <p class="card-text mb-3"><strong>Lessons:</strong></p>
       {% for lesson in teacher.lesson_of_teacher.all%}
       <p class="card-text mb-3">{{ lesson.title }}</p>
-      {% endfor %} {% endif %}
+      {% endfor %} 
+      {% endif %}
     </div>
   </div>
 </div>

@@ -25,9 +25,9 @@ class Student(models.Model):
     student_lessons = models.ManyToManyField(Lesson, blank=True,
                                              through='StudentLesson')
     department_request = models.BooleanField(default=False)
-    adviser = models.ForeignKey('Teacher', on_delete=models.CASCADE,
-                                blank=True, null=True)
     year = models.IntegerField(default=1)
+    adviser = models.ForeignKey(
+        'Teacher', on_delete=models.CASCADE, blank=True, null=True)
 
     def __str__(self):
         return f'{self.user.first_name} {self.user.last_name}'
