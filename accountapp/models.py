@@ -27,9 +27,10 @@ class Student(models.Model):
     department_request = models.BooleanField(default=False)
     adviser = models.ForeignKey('Teacher', on_delete=models.CASCADE,
                                 blank=True, null=True)
+    year = models.IntegerField(default=1)
 
     def __str__(self):
-        return self.user.username
+        return f'{self.user.first_name} {self.user.last_name}'
 
 
 class StudentLesson(models.Model):

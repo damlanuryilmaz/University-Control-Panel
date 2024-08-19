@@ -1,4 +1,15 @@
-{% extends 'base.html' %} {% load static %} {% load crispy_forms_tags%} {% block title %} Syllabus {% endblock title %}
+{% extends 'base.html' %} {% load static %} {% load crispy_forms_tags%} {% block title %} Syllabus {% endblock title %} {% block css_files %}  
+    <style>
+        .schedule-table th, .schedule-table td {
+            text-align: center;
+            vertical-align: middle;
+            height: 70px;
+        }
+        .time-slot {
+            background-color: #f8f9fa;
+        }
+    </style>
+    {% endblock css_files %}
 {% block content %}
 
 <div class="container">

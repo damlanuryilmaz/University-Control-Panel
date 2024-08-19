@@ -1,8 +1,58 @@
 <div class="container mt-4">
   <p>You have chosen a total of {{ student.student_ects }} ECTS.</p>
-
+  {% comment %} <br />
   <div class="row">
-    <div class="col-md-10">
+        <div class="col-md-12 ">
+      <div class="card">
+        <div class="card-body">
+          <div class="container">
+            <table class="table table-bordered schedule-table">
+              <thead class="table-dark">
+                <tr>
+                  <th>Time</th>
+                  <th>Monday</th>
+                  <th>Tuesday</th>
+                  <th>Wednesday</th>
+                  <th>Thursday</th>
+                  <th>Friday</th>
+                </tr>
+              </thead>
+              <tbody>
+
+                <tr>
+                  <td class="time-slot">09:00 - 12:00</td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td class="time-slot">12:00 - 15:00</td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td class="time-slot">15:00 - 18:00</td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div> {% endcomment %}
+  <br />
+  <div class="row">
+    <div class="col-md-12">
       <table class="table table-bordered">
         <thead>
           <tr>
@@ -21,10 +71,6 @@
             <td>
               {% for grade in grades %} {% if lesson == grade.lesson %} {{ grade.grade }} {% endif %} {% endfor %}
             </td>
-
-            <script>
-              console.log("{{ lesson }}");
-            </script>
           </tr>
           {% endfor %}
         </tbody>
@@ -32,3 +78,7 @@
     </div>
   </div>
 </div>
+<br />
+<br />
+<br />
+<br />

@@ -80,6 +80,7 @@ class SyllabusView(LoginRequiredMixin, View):
         context = {
             'form': form,
             'student': student,
+            'department_capacity': student.department_of_student.capacity,
         }
 
         return render(request, "teacherapp/syllabus.html", context)

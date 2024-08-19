@@ -43,7 +43,7 @@
             Student
           </a>
           <ul class="dropdown-menu">
-            <li><a class="dropdown-item" href="{% url 'department_request' %}">Department Request</a></li>
+            <li><a class="dropdown-item" href="{% url 'department_request' %}">Request</a></li>
           </ul>
         </li>
         <li class="nav-item dropdown me-3">
@@ -51,7 +51,7 @@
             Teacher
           </a>
           <ul class="dropdown-menu">
-            <li><a class="dropdown-item" href="{% url 'assign_lesson' %}">Assign Lesson</a></li>
+            <li><a class="dropdown-item" href="{% url 'assign_lesson' %}">Lesson</a></li>
           </ul>
         </li>
         {% endif %} {% if not user.status == 'Admin' %}
