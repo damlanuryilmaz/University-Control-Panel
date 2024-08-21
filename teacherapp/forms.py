@@ -25,6 +25,11 @@ class StudentLessonForm(forms.ModelForm):
             student = Student.objects.get(user=self.user)
             self.fields['student_lessons'].queryset = Lesson.objects.filter(
                 category=student.department_of_student)
+            # Update widget attribute to data attr (lesson name)
+            for lesson in self.fields['student_lessons'].queryset:
+                self.fields['student_lessons'].widget.attrs.update({
+                    f'data-lesson-{lesson.pk}': lesson.title
+                })
 
     def capacity_check(self, student_lessons):  # Department capacity check
         student = Student.objects.get(user=self.user)

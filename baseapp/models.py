@@ -46,6 +46,6 @@ class Lesson(models.Model):
 
     def __str__(self):
         # Return a query string and show in the screen with that format
-        return (f'{self.title} | {self.ects} ECTS | {self.capacity} Capacity | '
-                f'{self.course_hour}'
+        return (f'{self.title} | {self.ects} ECTS | '
+                f'{self.capacity} Capacity | {self.course_hour}'
                 )

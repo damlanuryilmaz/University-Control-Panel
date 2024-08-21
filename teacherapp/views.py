@@ -39,7 +39,7 @@ class GradeView(LoginRequiredMixin, View):  # For teachers to assign grades
         return redirect('grade')
 
 
-class SyllabusView(LoginRequiredMixin, View):
+class SyllabusView(LoginRequiredMixin, View):  # For students to select lessons
     def get(self, request):
         student = Student.objects.get(user=request.user)
         form = StudentLessonForm(user=request.user)

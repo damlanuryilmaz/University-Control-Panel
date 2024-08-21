@@ -1,11 +1,16 @@
-{% load crispy_forms_tags %}
+{% load crispy_forms_tags %} {% load static %}
 <p>You must choose a maximum of {{ department_capacity }} ECTS.</p>
 <br />
 <form method="POST" action="{% url 'syllabus' %}">
   {% csrf_token %}
   <div class="row">
     <div class="col-md-5 me-5">{{ form|crispy }}</div>
-    <div class="col-md-6 "></div>
+    <div class="col-md-6">
+      <div id="selected-lessons">
+        <h4>Selected Lessons:</h4>
+        <ul id="lesson-list"></ul>
+      </div>
+    </div>
   </div>
   <div class="row">
     <div class="col-md-2 mb-4">
@@ -17,3 +22,18 @@
 <br />
 <br />
 <br />
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script>
+  $(document).ready(function () {
+    $('input[name="student_lessons"]').change(function () {
+      var lessonName = $(this).data("lesson-" + $(this).val());
+
+      if ($(this).is(":checked")) {
+        $("#lesson-list").append("<li data-lesson='" + $(this).val() + "'>" + lessonName + "</li>");
+      } else {
+        $('#lesson-list li[data-lesson="' + $(this).val() + '"]').remove();
+      }
+      
+    });
+  });
+</script>

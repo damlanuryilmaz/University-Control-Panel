@@ -24,7 +24,6 @@ class DepartmentRequest(LoginRequiredMixin, View):
             'students_wo_adviser': students_wo_adviser,
             'teacher': teachers,
             'adviserform': adviserform,
-            
         }
 
         return render(
