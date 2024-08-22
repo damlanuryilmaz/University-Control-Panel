@@ -1,9 +1,10 @@
-from accountapp.models import CustomUser, Student, Teacher
+from accountapp.models import CustomUser, Student, Teacher, StudentLesson
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import render, redirect
-from .forms import StudentLessonForm
+from django.http import JsonResponse
 from .models import Contact, Grade
 from baseapp.models import Lesson
+from .forms import AddLessonForm
 from django.views import View
 
 
@@ -39,51 +40,194 @@ class GradeView(LoginRequiredMixin, View):  # For teachers to assign grades
         return redirect('grade')
 
 
-class SyllabusView(LoginRequiredMixin, View):  # For students to select lessons
+# class LessonSelectionView(LoginRequiredMixin, View):
+#     # For students to select lessons
+#     template_name = "teacherapp/lesson_select.html"
+
+#     def get(self, request):
+#         student = Student.objects.get(user=request.user)
+#         lessons = Lesson.objects.filter(
+    # category=student.department_of_student)
+#         selected_lessons = (
+#             StudentLesson.objects
+#             .filter(students=student)
+#             .select_related('lessons')
+#         )
+
+#         context = {
+#             'lessons': lessons,
+#             'selected_lessons': selected_lessons,
+#             'addlessonform': AddLessonForm(),
+#         }
+
+#         return render(request, self.template_name, context)
+
+#     def post(self, request):
+#         student = Student.objects.get(user=request.user)
+#         form = AddLessonForm(request.POST)
+
+#         if form.is_valid():
+#             lesson = form.cleaned_data['lesson']
+#             StudentLesson.objects.create(student=student, lesson=lesson)
+
+#             if not StudentLesson.objects.filter(
+#                 student=student,
+#                 lesson=lesson
+#             ).exists():
+#                 StudentLesson.objects.create(student=student, lesson=lesson)
+#                 return JsonResponse(
+#                     {'success': True, 'message':
+# 'Lesson added successfully.'})
+#             else:
+#                 return JsonResponse(
+#                     {'success': False, 'message': 'Lesson already added.'})
+
+#         return JsonResponse({
+#             'success': False,
+#             'message': 'Invalid data submitted.'
+#         })
+
+
+# class RemoveLessonView(LoginRequiredMixin, View):
+#     # Delete unchecked lessons
+#     def post(self, request):
+#         lesson_id = request.POST.get('lesson_id')
+#         student = Student.objects.get(user=request.user)
+
+#         lesson = Lesson.objects.get(id=lesson_id)
+#         StudentLesson.objects.filter(students=student,
+# lessons=lesson).delete()
+
+#         return JsonResponse({
+#             'success': True,
+#             'message': 'Lesson removed successfully.'
+#         })
+
+
+# class SubmitLessonsView(View):
+#     template_name = 'submit_lessons.html'
+
+#     def get(self, request):
+#         form = SubmitLessonForm()
+
+#         context = {
+#             'form': form,
+#         }
+
+#         return render(request, self.template_name, context)
+
+#     def post(self, request):
+#         form = SubmitLessonForm(request.POST)
+
+#         if form.is_valid() and form.cleaned_data['confirm']:
+#             student = Student.objects.get(user=request.user)
+#             student.department_request = True
+#             student.save()
+
+#             return redirect('index')
+
+#         context = {
+#             'form': form,
+#         }
+
+#         return render(request, self.template_name, context)
+
+
+# For students to select lessons
+class LessonSelectionView(LoginRequiredMixin, View):
     def get(self, request):
-        student = Student.objects.get(user=request.user)
-        form = StudentLessonForm(user=request.user)
-        grades = Grade.objects.filter(student=student)
 
-        try:
+        student = Student.objects.get(user=request.user)
+        form = AddLessonForm(user=request.user)
+
+        if student.department_of_student:
             department_capacity = student.department_of_student.capacity
-        except AttributeError:
-            department_capacity = None  # If student has no department
+            selected_lessons = student.student_lessons.all()
 
-        context = {
-            'form': form,
-            'student': student,
-            'department_capacity': department_capacity,
-            'grades': grades,
-        }
-        return render(request, "teacherapp/syllabus.html", context)
+            context = {
+                'form': form,
+                'student': student,
+                'department_capacity': department_capacity,
+                'selected_lessons': selected_lessons,
+            }
 
-    def post(self, request):
+            return render(request, "teacherapp/lesson_select.html", context)
 
-        student = Student.objects.get(user=request.user)
-        form = StudentLessonForm(request.POST, user=request.user)
+        else:
+            context = {
+                'form': form,
+                'student': student,
+            }
+
+            return render(request, "teacherapp/lesson_select.html", context)
+
+    def post(self, request, *args, **kwargs):
+
+        form = AddLessonForm(request.POST, user=request.user)
 
         if form.is_valid():
+            student = Student.objects.get(user=request.user)
+
+            lessons = form.cleaned_data['student_lessons']
             student.student_ects = form.total_ects
             # Assign total ECTS to student
             student.save()
 
-            for lesson in form.cleaned_data['student_lessons']:
-                student.student_lessons.add(lesson)
-                # Add selected lessons to student
-                lesson.capacity -= 1
-                # Decrease the capacity of the lesson
-                lesson.save()
+            new_lessons = set(lessons.values_list('id', flat=True))
+            existing_lessons = set(StudentLesson.objects.filter(
+                students=student).values_list('lessons_id', flat=True))
 
-            return redirect('syllabus')
+            to_add = new_lessons - existing_lessons
+            to_remove = existing_lessons - new_lessons
 
-        context = {
-            'form': form,
-            'student': student,
-            'department_capacity': student.department_of_student.capacity,
-        }
+            for lesson_id in to_add:
+                lesson = Lesson.objects.get(id=lesson_id)
+                StudentLesson.objects.create(
+                    students=student, lessons=lesson)
 
-        return render(request, "teacherapp/syllabus.html", context)
+            for lesson_id in to_remove:
+                StudentLesson.objects.filter(
+                    students=student, lessons_id=lesson_id).delete()
+
+            selected_lesson_names = [
+                lesson.title for lesson in lessons]
+
+            return JsonResponse({'status': 'success',
+                                 'selected_lessons': selected_lesson_names})
+
+        return JsonResponse(
+            {'status': 'error', 'errors': form.errors}, status=400)
+
+        # context = {
+        #     'form': form,
+        #     'student': student,
+        #     'department_capacity': student.department_of_student.capacity,
+        # }
+
+        # return render(request, "teacherapp/lesson_select.html", context)
+
+    # def handle_lesson_selection(self, request):
+    #     # Using JS to add and delete lesson
+    #     student = Student.objects.get(user=request.user)
+    #     lesson_id = request.POST.get('lesson_id')
+    #     action = request.POST.get('action')
+
+    #     if lesson_id and action:
+    #         lesson = Lesson.objects.get(id=lesson_id)
+
+    #         if action == 'add':
+    #             student.student_lessons.add(lesson)
+    #             lesson.capacity -= 1
+    #             lesson.save()
+    #         elif action == 'remove':
+    #             student.student_lessons.remove(lesson)
+    #             lesson.capacity += 1
+    #             lesson.save()
+
+    #         student.save()
+
+    #         return JsonResponse({'status': 'success'})
+    #     return JsonResponse({'status': 'error'}, status=400)
 
 
 class ContactView(LoginRequiredMixin, View):

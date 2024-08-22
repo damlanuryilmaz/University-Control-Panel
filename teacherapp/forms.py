@@ -3,7 +3,20 @@ from baseapp.models import Lesson
 from django import forms
 
 
-class StudentLessonForm(forms.ModelForm):
+# class AddLessonForm(forms.ModelForm):
+#     class Meta:
+#         model = StudentLesson
+#         fields = ['lesson']
+
+#     lesson = forms.ModelChoiceField(
+#         queryset=Lesson.objects.all(), widget=forms.HiddenInput())
+
+
+# class SubmitLessonForm(forms.Form):
+#     confirm = forms.BooleanField(label='Send Your Adviser', required=True)
+
+
+class AddLessonForm(forms.ModelForm):
     # Form for students to select lessons
     class Meta:
         # Subclass of ModelForm
@@ -26,10 +39,15 @@ class StudentLessonForm(forms.ModelForm):
             self.fields['student_lessons'].queryset = Lesson.objects.filter(
                 category=student.department_of_student)
             # Update widget attribute to data attr (lesson name)
-            for lesson in self.fields['student_lessons'].queryset:
-                self.fields['student_lessons'].widget.attrs.update({
-                    f'data-lesson-{lesson.pk}': lesson.title
-                })
+
+    def clean(self):
+        cleaned_data = super().clean()
+        student_lessons = self.cleaned_data.get('student_lessons')
+        self.ects_check(student_lessons)
+        self.capacity_check(student_lessons)
+        self.course_hour_check(student_lessons)
+
+        return cleaned_data
 
     def capacity_check(self, student_lessons):  # Department capacity check
         student = Student.objects.get(user=self.user)
@@ -45,9 +63,6 @@ class StudentLessonForm(forms.ModelForm):
         self.total_ects = total_ects
 
     def ects_check(self, student_lessons):  # Course capacity check
-        if not student_lessons:
-            raise forms.ValidationError(
-                'You have to select at least one lesson.')
 
         for lesson in student_lessons:
             if lesson.capacity == 0:
@@ -61,12 +76,3 @@ class StudentLessonForm(forms.ModelForm):
                 raise forms.ValidationError(
                     f'Course hour conflict: {lesson.course_hour}')
             course_hour_set.add(lesson.course_hour)
-
-    def clean(self):
-        cleaned_data = super().clean()
-        student_lessons = self.cleaned_data.get('student_lessons')
-        self.ects_check(student_lessons)
-        self.capacity_check(student_lessons)
-        self.course_hour_check(student_lessons)
-
-        return cleaned_data

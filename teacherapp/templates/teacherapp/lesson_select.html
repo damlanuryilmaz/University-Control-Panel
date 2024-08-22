@@ -1,0 +1,90 @@
+{% extends 'base.html' %} {% load static %} {% load crispy_forms_tags%} {% block title %} Lesson Select {% endblock title %} {% block css_files %}
+<style>
+  .schedule-table th,
+  .schedule-table td {
+    text-align: center;
+    vertical-align: middle;
+    height: 70px;
+  }
+  .time-slot {
+    background-color: #f8f9fa;
+  }
+</style>
+{% endblock css_files %} {% block content %}
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-12">
+      <h3 class="mt-4">Lesson Selection</h3>
+      <hr />
+      {% if student.department_of_student is None %}
+      <p>You have not been assigned to any department yet. Please contact the administrator.</p>
+
+      {% else %} {% load crispy_forms_tags %} {% load static %}
+      <p>You must choose a maximum of {{ department_capacity }} ECTS.</p>
+      <br />
+
+      <div class="row">
+        <div class="col-md-5 me-5">
+          <form method="POST" action="{% url 'lesson_selection' %}" id="lesson-selection-form">
+            {% csrf_token %} {{ form|crispy }}
+            <div class="row-md-2"><button type="submit" class="btn btn-primary">Submit</button></div>
+          </form>
+        </div>
+
+        <div class="col-md-6">
+          <div id="selected-lessons">
+            <h4>Selected Lessons:</h4>
+            <ul id="selected-lessons-list">
+              {% for lesson in student.student_lessons.all %}
+              <li>{{ lesson.title }}</li>
+              {% endfor %}
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <br />
+
+      <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+      <script>
+        $(document).ready(function () {
+          $("#lesson-selection-form").on("change", 'input[type="checkbox"]', function () {
+            $.ajax({
+              url: "{% url 'lesson_selection' %}",
+              type: "POST",
+              headers: {
+                "X-CSRFToken": "{{ csrf_token }}",
+              },
+              data: $("#lesson-selection-form").serialize(),
+              success: function (response) {
+                if (response.status === "success") {
+                  console.log("Lesson updated successfully.");
+
+                  $("#selected-lessons-list").empty();
+
+                  response.selected_lessons.forEach(function (lessonName) {
+                    $("#selected-lessons-list").append("<li>" + lessonName + "</li>");
+                  });
+                  alert("Details saved successfully.");
+                } else {
+                  console.log("Failed to update lesson.");
+                }
+              },
+              error: function(XMLHttpRequest, textStatus, errorThrown) {
+     alert("some error");
+  }
+            });
+          });
+        });
+      </script>
+
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+{% endblock content %} {% comment %} var lessonName = $(this).data("lesson-" + $(this).val()); if
+($(this).is(":checked")) { $("#lesson-list").append("
+<li data-lesson='" + $(this).val() + "'>" + lessonName + "</li>
+"); } else { $('#lesson-list li[data-lesson="' + $(this).val() + '"]').remove(); } {% endcomment %}

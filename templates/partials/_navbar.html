@@ -35,7 +35,7 @@
         </li>
         {% elif user.status == "Student" %}
         <li class="nav-item me-3">
-          <a class="nav-link" href="{% url 'syllabus' %}">Course</a>
+          <a class="nav-link" href="{% url 'lesson_selection' %}">Course</a>
         </li>
         {% elif user.status == 'Admin' %}
         <li class="nav-item dropdown me-3">
