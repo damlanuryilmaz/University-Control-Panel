@@ -53,6 +53,7 @@ class AddLessonForm(forms.ModelForm):
         student = Student.objects.get(user=self.user)
         total_ects = 0
         department_capacity = student.department_of_student.capacity
+
         for lesson in student_lessons:
             total_ects += lesson.ects
 
@@ -70,9 +71,16 @@ class AddLessonForm(forms.ModelForm):
                     f'Course capacity is full: {lesson.title}')
 
     def course_hour_check(self, student_lessons):  # Course hour check
+        course_week_set = set()
         course_hour_set = set()
         for lesson in student_lessons:
-            if lesson.course_hour in course_hour_set:
+            if lesson.day_of_week in course_week_set:
                 raise forms.ValidationError(
-                    f'Course hour conflict: {lesson.course_hour}')
-            course_hour_set.add(lesson.course_hour)
+                    f'Course hour conflict: {lesson.day_of_week} '
+                    f'{lesson.start_time} - {lesson.end_time}')
+            if lesson.start_time in course_hour_set:
+                raise forms.ValidationError(
+                    f'Course hour conflict: {lesson.day_of_week} '
+                    f'{lesson.start_time} - {lesson.end_time}')
+            course_week_set.add(lesson.day_of_week)
+            course_hour_set.add(lesson.start_time)

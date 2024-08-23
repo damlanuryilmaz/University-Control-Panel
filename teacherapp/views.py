@@ -161,7 +161,7 @@ class LessonSelectionView(LoginRequiredMixin, View):
 
             return render(request, "teacherapp/lesson_select.html", context)
 
-    def post(self, request, *args, **kwargs):
+    def post(self, request):
 
         form = AddLessonForm(request.POST, user=request.user)
 
@@ -189,11 +189,15 @@ class LessonSelectionView(LoginRequiredMixin, View):
                 StudentLesson.objects.filter(
                     students=student, lessons_id=lesson_id).delete()
 
-            selected_lesson_names = [
-                lesson.title for lesson in lessons]
+            selected_lessons = [{
+                'id': lesson.id,
+                'title': lesson.title,
+                'day_of_week': lesson.day_of_week,
+                'start_time': lesson.start_time.strftime('%H:%M')
+            } for lesson in lessons]
 
             return JsonResponse({'status': 'success',
-                                 'selected_lessons': selected_lesson_names})
+                                 'selected_lessons': selected_lessons})
 
         return JsonResponse(
             {'status': 'error', 'errors': form.errors}, status=400)

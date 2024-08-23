@@ -9,6 +9,17 @@
   .time-slot {
     background-color: #f8f9fa;
   }
+  table {
+    table-layout: fixed; /* Ensures the table respects the width of the cells */
+    width: 100%; /* Optional: Makes the table take the full width of its container */
+  }
+  td {
+    width: 20%; /* Adjust the percentage as needed */
+    word-wrap: break-word; /* Ensures content wraps within the cell */
+  }
+  th {
+    width: 20%; /* Ensure headers have the same width */
+  }
 </style>
 {% endblock css_files %} {% block content %}
 
@@ -20,29 +31,67 @@
       {% if student.department_of_student is None %}
       <p>You have not been assigned to any department yet. Please contact the administrator.</p>
 
-      {% else %} {% load crispy_forms_tags %} {% load static %}
+      {% else %}
       <p>You must choose a maximum of {{ department_capacity }} ECTS.</p>
       <br />
-
-      <div class="row">
-        <div class="col-md-5 me-5">
-          <form method="POST" action="{% url 'lesson_selection' %}" id="lesson-selection-form">
-            {% csrf_token %} {{ form|crispy }}
+      <form method="POST" action="{% url 'lesson_selection' %}" id="lesson-selection-form">
+        <div class="row">
+          <div class="col-md-5 me-5">
+            {% csrf_token %}
+            <div id="error-message" style="color: red"></div>
+            {{ form.non_field_errors }}
+            {{ form|crispy }}
             <div class="row-md-2"><button type="submit" class="btn btn-primary">Submit</button></div>
-          </form>
-        </div>
+          </div>
 
-        <div class="col-md-6">
-          <div id="selected-lessons">
-            <h4>Selected Lessons:</h4>
-            <ul id="selected-lessons-list">
-              {% for lesson in student.student_lessons.all %}
-              <li>{{ lesson.title }}</li>
-              {% endfor %}
-            </ul>
+          <div class="col-md-6">
+            <div class="row">
+              <div class="col-md-12">
+                <div class="container">
+                  <table class="table table-bordered schedule-table" id="week-schedule">
+                    <thead class="table-dark">
+                      <tr>
+                        <th>Time</th>
+                        <th>Monday</th>
+                        <th>Tuesday</th>
+                        <th>Wednesday</th>
+                        <th>Thursday</th>
+                        <th>Friday</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td class="time-slot">09:00 - 12:00</td>
+                        <td id="Monday-0900"></td>
+                        <td id="Tuesday-0900"></td>
+                        <td id="Wednesday-0900"></td>
+                        <td id="Thursday-0900"></td>
+                        <td id="Friday-0900"></td>
+                      </tr>
+                      <tr>
+                        <td class="time-slot">12:00 - 15:00</td>
+                        <td id="Monday-1200"></td>
+                        <td id="Tuesday-1200"></td>
+                        <td id="Wednesday-1200"></td>
+                        <td id="Thursday-1200"></td>
+                        <td id="Friday-1200"></td>
+                      </tr>
+                      <tr>
+                        <td class="time-slot">15:00 - 18:00</td>
+                        <td id="Monday-1500"></td>
+                        <td id="Tuesday-1500"></td>
+                        <td id="Wednesday-1500"></td>
+                        <td id="Thursday-1500"></td>
+                        <td id="Friday-1500"></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
+      </form>
 
       <br />
 
@@ -50,6 +99,8 @@
       <script>
         $(document).ready(function () {
           $("#lesson-selection-form").on("change", 'input[type="checkbox"]', function () {
+            var clickedCheckbox = $(this);
+            $("input[type='checkbox']").prop("disabled", false);
             $.ajax({
               url: "{% url 'lesson_selection' %}",
               type: "POST",
@@ -61,19 +112,24 @@
                 if (response.status === "success") {
                   console.log("Lesson updated successfully.");
 
-                  $("#selected-lessons-list").empty();
+                  $("#week-schedule td:not(.time-slot)").text("");
 
-                  response.selected_lessons.forEach(function (lessonName) {
-                    $("#selected-lessons-list").append("<li>" + lessonName + "</li>");
+                  response.selected_lessons.forEach(function (lesson) {
+                    var cellId = lesson.day_of_week + "-" + lesson.start_time;
+                    var sanitizedCellId = cellId.replace(/[^a-zA-Z0-9-_]/g, "");
+                    $("#" + sanitizedCellId ).text(lesson.title);
                   });
-                  alert("Details saved successfully.");
+                  $("#error-message").text("");
                 } else {
                   console.log("Failed to update lesson.");
+                  $("#error-message").text("Failed to update lesson.");
                 }
               },
-              error: function(XMLHttpRequest, textStatus, errorThrown) {
-     alert("some error");
-  }
+              error: function () {
+                console.log("Error to update lesson.");
+                $("#error-message").text("You cannot choose this lesson. Please drop it.");
+                $("input[type='checkbox']").not(clickedCheckbox).prop("disabled", true);
+              },
             });
           });
         });
@@ -84,7 +140,4 @@
   </div>
 </div>
 
-{% endblock content %} {% comment %} var lessonName = $(this).data("lesson-" + $(this).val()); if
-($(this).is(":checked")) { $("#lesson-list").append("
-<li data-lesson='" + $(this).val() + "'>" + lessonName + "</li>
-"); } else { $('#lesson-list li[data-lesson="' + $(this).val() + '"]').remove(); } {% endcomment %}
+{% endblock content %}

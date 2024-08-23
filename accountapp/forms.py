@@ -1,16 +1,8 @@
-from django import forms
 from accountapp.models import CustomUser
 from django.contrib.auth.forms import UserCreationForm
 
 
 class RegistrationForm(UserCreationForm):
-    # Initilize the form with deficient parts
-    first_name = forms.CharField(
-        max_length=100, required=True)
-    last_name = forms.CharField(
-        max_length=100, required=True)
-    usable_password = None
-
     class Meta:
         model = CustomUser
         fields = ['username', 'first_name', 'last_name', 'email',
@@ -39,10 +31,7 @@ class RegistrationForm(UserCreationForm):
 
     def save(self, commit=True):  # Override the save method
         user = super().save(commit=False)
-        # Commit is False cus add more data w/o saving
-        user.first_name = self.cleaned_data['first_name']
-        user.last_name = self.cleaned_data['last_name']
-        if commit:  # If commit is True, save the user
-            # if we dont write this, we need to call save in the views
+
+        if commit:
             user.save()
         return user

@@ -15,6 +15,18 @@
           <div class="card">
             <div class="card-body">
               <h3 class="card-title text-center mb-4">Login</h3>
+              
+              {% if messages %}
+                  <div class="d-flex justify-content-center">
+                      <div class="alert alert-dismissible alert-success text-center">
+                          {% for message in messages %}
+                              <strong>{{ message }}</strong>
+                          {% endfor %}
+                      </div>
+                  </div>
+              {% endif %}
+            
+
               <form method="POST">
                 {% csrf_token %}
                 <div class="container">
