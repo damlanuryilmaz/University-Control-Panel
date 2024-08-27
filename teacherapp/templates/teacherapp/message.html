@@ -3,14 +3,16 @@
 {% block title %}Messages{% endblock title %}
 {% block content %}
 
-<div class="container mt-5">
+<div class="container">
+      <h3 class="mt-4 mb-3">Messages</h3>
+      <hr />
   {% if messages %}
   <div class="d-flex flex-column align-items-center">
     {% for message in messages %}
     <div class="col-md-6 mb-4">
       <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
-          <span>Student: {{ message.message_of_student.user.first_name|title }} {{ message.message_of_student.user.last_name|title }}</span>
+          <span>Student: {{ message.student.user.first_name|title }} {{ message.student.user.last_name|title }}</span>
           <form method="POST" action="{% url 'delete_message' message.id %}">
             {% csrf_token %}
             <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this?')">Delete</button>

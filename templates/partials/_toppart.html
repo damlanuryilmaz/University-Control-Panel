@@ -2,13 +2,18 @@
 
 <div class="container-fluid py-2">
   <div class="row">
-    <div class="col-md-1 d-flex mb-2">
-      <a href="{% url 'index' %}">
-        <img src="{% static 'baseapp/img/logo.png' %}" alt="Universystem" class="img-fluid" />
+    <div class="col-md-1 d-flex">
+      <a href="{% url 'index' %}" class="mx-auto">
+        <img
+          src="{% static 'baseapp/img/logo.png' %}"
+          alt="UniverSystem"
+          class="img-fluid"
+          style="width: 50px; height: auto"
+        />
       </a>
     </div>
-    <div class="col-md-11">
-      <h4><strong>Universystem</strong></h4>
+    <div class="col-md-11 d-flex align-items-center mt-2">
+      <h4><strong>UniverSystem</strong></h4>
     </div>
   </div>
 </div>

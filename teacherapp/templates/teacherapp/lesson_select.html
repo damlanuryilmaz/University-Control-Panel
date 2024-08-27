@@ -10,15 +10,39 @@
     background-color: #f8f9fa;
   }
   table {
-    table-layout: fixed; /* Ensures the table respects the width of the cells */
-    width: 100%; /* Optional: Makes the table take the full width of its container */
+    table-layout: fixed;
+    width: 100%; 
   }
   td {
-    width: 20%; /* Adjust the percentage as needed */
-    word-wrap: break-word; /* Ensures content wraps within the cell */
+    width: 20%; 
+    word-wrap: break-word; 
   }
   th {
-    width: 20%; /* Ensure headers have the same width */
+    width: 20%; 
+  }
+  .form-check {
+    display: flex;
+    align-items: center;
+  }
+
+  .form-check-input {
+    margin-right: 1rem;
+  }
+
+  .form-check-label {
+    font-size: 1rem;
+  }
+
+  .capacity {
+    font-size: 1rem;
+    color: #ff0000;
+  }
+
+  .ects {
+    margin-left: 37px; 
+  }
+  .error-message {
+    margin-bottom: 15px; 
   }
 </style>
 {% endblock css_files %} {% block content %}
@@ -28,20 +52,53 @@
     <div class="col-md-12">
       <h3 class="mt-4">Lesson Selection</h3>
       <hr />
-      {% if student.department_of_student is None %}
+      {% if student.department is None %}
       <p>You have not been assigned to any department yet. Please contact the administrator.</p>
 
       {% else %}
-      <p>You must choose a maximum of {{ department_capacity }} ECTS.</p>
+      <div class="row">
+        <div class="col-md-10">
+          <p>You must choose a maximum of {{ department_capacity }} ECTS.</p>
+        </div>
+      <div class="col-md-2">
+        <form method="POST" action="{% url 'submit_lessons' %}">
+          {% csrf_token %}
+                    
+        <button type="submit" class="btn btn-info">Send to Adviser</button>
+        </form>
+      
+      </div>
+
+      </div>
       <br />
       <form method="POST" action="{% url 'lesson_selection' %}" id="lesson-selection-form">
         <div class="row">
           <div class="col-md-5 me-5">
             {% csrf_token %}
-            <div id="error-message" style="color: red"></div>
-            {{ form.non_field_errors }}
-            {{ form|crispy }}
-            <div class="row-md-2"><button type="submit" class="btn btn-primary">Submit</button></div>
+            <div id="error-message" class="error-message" style="color: red"></div>
+            <div class="form-group">
+              {% for lesson in form.fields.lessons.queryset %}
+              <div>
+                <label>
+                  <input
+                    class="form-check-input"
+                    type="checkbox"
+                    name="lessons"
+                    value="{{ lesson.id }}"
+                    {% if lesson in student.lessons.all %}
+                    checked
+                    {% endif %}
+                  />
+                  {{ lesson.title }} | {{ lesson.day_of_week }} {{ lesson.start_time|date:"H.i" }} - {{ lesson.end_time|date:"H.i" }}
+                  <br />
+                  <span class="ects">{{ lesson.ects }} ACTS | </span>
+                  <span class="capacity">Capacity: {{ lesson.capacity }}</span><br />
+                </label>
+              </div>
+              {% endfor %}
+            </div>
+
+            
           </div>
 
           <div class="col-md-6">
@@ -96,8 +153,89 @@
       <br />
 
       <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
       <script>
         $(document).ready(function () {
+
+          function updateSchedule() {
+            $.ajax({
+                url: "{% url 'update_week_table' %}",  // Adjust the URL to match your view
+                type: "GET",
+                success: function (response) {
+                    // Clear existing schedule
+                    $("#week-schedule td:not(.time-slot)").text("");
+
+                    // Populate the schedule with lessons
+                    response.lessons.forEach(function (lesson) {
+                        var cellId = lesson.day_of_week + "-" + lesson.start_time;
+                        var sanitizedCellId = cellId.replace(/[^a-zA-Z0-9-_]/g, "");  // Ensure the ID is valid
+                        $("#" + sanitizedCellId).text(lesson.title);
+                    });
+                },
+                error: function () {
+                    console.log("Error fetching schedule data.");
+                }
+            });
+        }
+
+        // Initial population of schedule on page load
+        updateSchedule();
+
+        // Optionally, you can also update the schedule when checkboxes change
+        $("#lesson-selection-form").on("change", 'input[type="checkbox"]', function () {
+            // Perform any actions needed when a checkbox is changed, then update the schedule
+            updateSchedule();
+        });
+
+          function saveCheckboxState() {
+            var selectedLessons = [];
+            $('input[type="checkbox"]:checked').each(function () {
+              selectedLessons.push($(this).attr('id'));
+            });
+            localStorage.setItem('selectedLessons', JSON.stringify(selectedLessons));
+          }
+
+          // Function to restore the state of checkboxes
+          function restoreCheckboxState() {
+            var selectedLessons = JSON.parse(localStorage.getItem('selectedLessons'));
+            if (selectedLessons) {
+              selectedLessons.forEach(function (lessonId) {
+                $('#' + lessonId).prop('checked', true);
+              });
+            }
+          }
+
+          // Restore checkbox state on page load
+          restoreCheckboxState();
+
+          // Save checkbox state on change
+          $("#lesson-selection-form").on("change", 'input[type="checkbox"]', function () {
+            saveCheckboxState();
+          });
+
+          function updateCapacities() {
+            $.ajax({
+              url: "{% url 'update_capacity' %}",
+              type: "GET",
+              success: function (response) {
+                response.updated_lessons.forEach(function (lesson) {
+                  var checkbox = $('input[type="checkbox"][value="' + lesson.id + '"]');
+                  var label = checkbox.closest("label");
+                  if (label.length > 0) {
+                    var capacitySpan = label.find(".capacity");
+                    if (capacitySpan.length > 0) {
+                      capacitySpan.text("Capacity: " + lesson.capacity);
+                    }
+                  }
+                });
+              },
+              error: function () {
+                console.log("Error fetching updated capacities.");
+              },
+            });
+          }
+          setInterval(updateCapacities, 10000);
+
           $("#lesson-selection-form").on("change", 'input[type="checkbox"]', function () {
             var clickedCheckbox = $(this);
             $("input[type='checkbox']").prop("disabled", false);
@@ -109,25 +247,41 @@
               },
               data: $("#lesson-selection-form").serialize(),
               success: function (response) {
-                if (response.status === "success") {
+                if (response.success) {
                   console.log("Lesson updated successfully.");
 
+                  // Clear the schedule before updating it
                   $("#week-schedule td:not(.time-slot)").text("");
 
+                  // Populate the schedule with selected lessons
                   response.selected_lessons.forEach(function (lesson) {
                     var cellId = lesson.day_of_week + "-" + lesson.start_time;
                     var sanitizedCellId = cellId.replace(/[^a-zA-Z0-9-_]/g, "");
-                    $("#" + sanitizedCellId ).text(lesson.title);
+                    $("#" + sanitizedCellId).text(lesson.title);
                   });
+
+                  // Update lesson capacities in the select list
+                  response.updated_lessons.forEach(function (lesson) {
+                    var checkbox = $('input[type="checkbox"][value="' + lesson.id + '"]');
+                    var label = checkbox.closest("label");
+                    if (label.length > 0) {
+                      var capacitySpan = label.find(".capacity");
+                      if (capacitySpan.length > 0) {
+                        capacitySpan.text("Capacity: " + lesson.capacity);
+                      }
+                    }
+                  });
+
                   $("#error-message").text("");
                 } else {
                   console.log("Failed to update lesson.");
-                  $("#error-message").text("Failed to update lesson.");
                 }
               },
               error: function () {
                 console.log("Error to update lesson.");
                 $("#error-message").text("You cannot choose this lesson. Please drop it.");
+
+                // Disable other checkboxes except the clicked one
                 $("input[type='checkbox']").not(clickedCheckbox).prop("disabled", true);
               },
             });

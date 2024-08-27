@@ -3,7 +3,7 @@ from .models import CustomUser, Student, Teacher, StudentLesson
 
 
 class StudentAdmin(admin.ModelAdmin):
-    list_display = ['user', 'department_of_student', 'student_ects']
+    list_display = ['user', 'department', 'acts', 'adviser']
 
 
 admin.site.register(CustomUser)

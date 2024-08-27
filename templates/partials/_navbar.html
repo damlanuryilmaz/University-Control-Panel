@@ -1,4 +1,4 @@
-<nav class="navbar navbar-expand-lg bg-primary" data-bs-theme="dark">
+<nav class="navbar navbar-expand-lg bg-dark" data-bs-theme="dark">
   <div class="container-fluid">
     {% if user.status == "Teacher" %}
     <a class="navbar-brand">Teacher</a>
@@ -27,15 +27,40 @@
           <a class="nav-link" href="{% url 'department' %}">Departments</a>
         </li>
         {% if user.status == "Teacher" %}
-        <li class="nav-item me-3">
-          <a class="nav-link" href="{% url 'grade' %}">Enter Grade</a>
+        <li class="nav-item dropdown">
+          <a
+            class="nav-link dropdown-toggle me-3"
+            href="#"
+            role="button"
+            data-bs-toggle="dropdown"
+            aria-expanded="false"
+          >
+            Courses
+          </a>
+          <ul class="dropdown-menu">
+            {% for lesson in user.teacher.lessons.all %}
+            <li><a class="dropdown-item" href="{% url 'teacher_grading' slug=lesson.slug %}">{{ lesson.title }}</a></li>
+
+            {% endfor %}
+          </ul>
         </li>
-        <li class="nav-item me-3">
-          <a class="nav-link" href="{% url 'message' %}">Messages</a>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle me-3" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            Student
+          </a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="{% url 'message' %}">Messages</a></li>
+            <li><a class="dropdown-item" href="{% url 'course_approval' %}">Course Approval</a></li>
+          </ul>
         </li>
+
         {% elif user.status == "Student" %}
         <li class="nav-item me-3">
+          {% if user.student.is_submitted %}
+          <a class="nav-link" href="{% url 'course_page' %}">Course</a>
+          {% else %}
           <a class="nav-link" href="{% url 'lesson_selection' %}">Course</a>
+          {% endif %}
         </li>
         {% elif user.status == 'Admin' %}
         <li class="nav-item dropdown me-3">

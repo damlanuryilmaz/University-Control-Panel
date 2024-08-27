@@ -5,9 +5,9 @@ from django.db import models
 
 class Contact(models.Model):
     message = models.TextField(max_length=500)
-    message_of_teacher = models.ForeignKey(
+    teacher = models.ForeignKey(
         CustomUser, on_delete=models.CASCADE, blank=True, null=True)
-    message_of_student = models.ForeignKey(
+    student = models.ForeignKey(
         Student, on_delete=models.CASCADE, blank=True, null=True)
 
 

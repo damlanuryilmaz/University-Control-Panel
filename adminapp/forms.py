@@ -6,20 +6,20 @@ from django import forms
 class DepartmentRequestForm(forms.ModelForm):
     class Meta:
         model = Student
-        fields = ['department_of_student',]
+        fields = ['department',]
         widget = {
-            'department_of_student': forms.Select,
+            'department': forms.Select,
         }
         labels = {
 
-            'department_of_student': 'Select Department:',
+            'department': 'Select Department:',
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['department_of_student'].queryset = \
+        self.fields['department'].queryset = \
             Department.objects.all()
-        self.fields['department_of_student'].required = True
+        self.fields['department'].required = True
 
 
 class AssignAdviserForm(forms.ModelForm):

@@ -1,0 +1,34 @@
+{% extends 'base.html' %} {% load static %} {% load crispy_forms_tags%} {% block title %} Syllabus {% endblock title %}
+{% block content %}
+<div class="container mt-4">
+  <p>You have chosen a total of {{ student.acts }} ECTS.</p>
+
+  <br />
+  <div class="row">
+    <div class="col-md-12">
+      <table class="table table-bordered">
+        <thead>
+          <tr>
+            <th scope="col"></th>
+            <th scope="col">Lesson Name</th>
+            <th scope="col">ECTS</th>
+            <th scope="col">Grade</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for lesson in student.lessons.all %}
+          <tr>
+            <th scope="row">{{ forloop.counter }}</th>
+            <td>{{ lesson.title }}</td>
+            <td>{{ lesson.ects }}</td>
+            <td>
+              {% for grade in grades %} {% if lesson == grade.lesson %} {{ grade.grade }} {% endif %} {% endfor %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock content %}

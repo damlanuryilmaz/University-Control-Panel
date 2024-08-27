@@ -34,10 +34,14 @@ class Lesson(models.Model):
         max_length=9, choices=DAY_OF_WEEK)
     start_time = models.TimeField()
     end_time = models.TimeField()
+    slug = models.SlugField(db_index=True, unique=True,
+                            blank=True, null=True, editable=False)
 
     def __str__(self):
         # Return a query string and show in the screen with that format
-        return (f'{self.title} | {self.ects} ECTS | '
-                f'{self.capacity} Capacity | {self.day_of_week} {
-                    self.start_time} - {self.end_time}'
-                )
+        return self.title
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.title)
+        super(Lesson, self).save(*args, **kwargs)

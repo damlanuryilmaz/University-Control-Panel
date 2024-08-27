@@ -1,0 +1,51 @@
+{% extends 'base.html' %} {% load crispy_forms_tags %} {% load static %} {% block title %}Course Approval{% endblock title %} {% block content %}
+
+<div class="container">
+  <div class="row mt-4">
+    <h3 class="mb-3">Course Approval</h3>
+    <hr />
+    <div class="letter-navigation mb-3">
+      <ul class="pagination pagination-sm justify-content-center">
+        {% for letter in "ABCDEFGHIJKLMNOPQRSTUVWXYZ" %}
+        <li class="page-item {% if selected_letter == letter %}active{% endif %}">
+          <a class="page-link" href="?letter={{ letter }}">{{ letter }}</a>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+    <div class="accordion" id="accordionExample">
+      {% for student in students %}
+      <div class="accordion-item">
+        <h2 class="accordion-header" id="heading{{forloop.counter}}">
+          <button
+            class="accordion-button"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#collapse{{forloop.counter}}"
+            aria-expanded="false"
+            aria-controls="collapse{{forloop.counter}}"
+          >
+            {{ student.user.first_name }} {{ student.user.last_name }}
+          </button>
+        </h2>
+        <div id="collapse{{forloop.counter}}" class="accordion-collapse collapse">
+          <div class="accordion-body">
+            <ul class="list-group list-group-flush">
+              {% for lesson in lessons %} {% if lesson.students == student %}
+              <li class="list-group-item">{{ lesson.lessons }}</li>
+              {% endif %} {% endfor %}
+            </ul>
+          </div>
+        </div>
+      </div>
+      <br />
+      <br />
+      <br />
+      <br />
+      {% endfor %}
+
+    </div>
+  </div>
+</div>
+
+{% endblock content %}

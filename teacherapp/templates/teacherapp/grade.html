@@ -1,95 +1,126 @@
-{% extends 'base.html' %} {% load static %} {% block title %}Grades{% endblock title %} {% block content %}
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% load static %}
+{% block title %}{{ lesson.title }}{% endblock title %}
+{% block css_files %}
+<style>
+  .centered {
+    vertical-align: middle;
+  }
+</style>
+{% endblock css_files %}
+{% block content %}
 
 <div class="container">
   <div class="row">
-    <h3 class="mt-4 mb-4">Assign Grades</h3>
+    <h3 class="mt-4 mb-4">Assign Grades - {{ lesson.title }}</h3>
     <hr />
-
-    {% for lesson in lessons %}
-
-    <ul class="list-group mb-4">
-      <li class="list-group-item list-group-item-primary d-flex justify-content-between align-items-center">
-        <h5>{{ lesson.title }}</h5>
-      </li>
-
-      <div class="card">
-        <ul class="list-group list-group-flush">
-          {% for student in students %} {% if lesson in student.student_lessons.all %}
-          <form method="post" action="{% url 'grade' %}">
+    {% if not students %}
+    <div class="alert alert-dismissible alert-secondary" role="alert">No students found.</div>
+    {% else %}
+    <table class="table">
+      <thead>
+        <tr>
+          <th scope="col"></th>
+          <th scope="col" class="centered">Student</th>
+          <th scope="col" class="centered">Grade</th>
+          <th scope="col" class="centered">Previous Grade</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for student in students %}
+          <form id="grade-form-{{ student.id }}" method="post">
             {% csrf_token %}
-
-            <li class="list-group-item">
-              <div class="row">
-                <div class="col-md-5 text-center">{{ student.user.first_name }} {{ student.user.last_name }}</div>
-                <div class="col-md-2">
-                  <select name="grade" class="form-control">
-                    {% for grade_value, grade_label in grade_types %}
-                    <option value="{{ grade_value }}">{{ grade_label }}</option>
-
-                    {% endfor %}
-                  </select>
-                  <input type="hidden" name="lesson" value="{{ lesson.id }}" />
-                  <input type="hidden" name="student" value="{{ student.id }}" />
-                </div>
-                <div class="col-md-3">
-                  <div class="row justify-content-center">
-                    <div class="col-md-2 text-center">
-                      <button
-                        type="submit"
-                        class="btn btn-primary"
-                        onclick="return confirm('Are you sure you want to assign a to {{student.user.first_name}} {{student.user.last_name}}?')"
-                      >
-                        Submit
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </li>
+            <tr>
+              <th scope="row" class="centered">{{ forloop.counter }}</th>
+              <td class="centered">{{ student.user.first_name }} {{ student.user.last_name }}</td>
+              <td class="centered">
+                <select name="grade" class="form-select grade-select" data-student-id="{{ student.id }}" data-lesson-id="{{ lesson.id }}">
+                  {% for value, label in form.fields.grade.choices %}
+                  <option value="{{ value }}" {% if student.grade == value %}selected{% endif %}>{{ label }}</option>
+                  {% endfor %}
+                </select>
+                <input type="hidden" name="lesson" value="{{ lesson.id }}" />
+                <input type="hidden" name="student" value="{{ student.id }}" />
+              </td>
+              <td class="centered" id="previous-grade-{{ student.id }}">{% if student.grade %} {{ student.grade }} {% else %} N/A {% endif %}</td>
+            </tr>
           </form>
-          {% endif %} {% endfor %}
-        </ul>
-      </div>
-      <br />
-    </ul>
+        {% endfor %}
 
-    {% endfor %}
-  </div>
-  <div class="row">
-    <div class="col-md-6">
-      <h4 class="mt-4 mb-4">Grades</h4>
-
-      {% if not grades %}
-      <div class="alert alert-dismissible alert-secondary" role="alert">
-        No grades have been assigned yet. {% else %}
-
-        <table class="table">
-          <thead>
-            <tr>
-              <th scope="col"></th>
-              <th scope="col">Student</th>
-              <th scope="col">Lesson</th>
-              <th scope="col">Grade</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              {% for grade in grades %}
-              <th scope="row"></th>
-
-              <td>{{ grade.student }}</td>
-              <td>{{ grade.lesson }}</td>
-              <td>{{ grade.grade }}</td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
+      </tbody>
+    </table>
+    
+    <div class="pagination-container">
+      <ul class="pagination pagination-sm justify-content-end">
+        {% if students.has_previous %}
+          <li class="page-item">
+            <a class="page-link" href="?page={{ students.previous_page_number }}">&laquo;</a>
+          </li>
+        {% else %}
+          <li class="page-item disabled">
+            <a class="page-link" href="#">&laquo;</a>
+          </li>
         {% endif %}
-      </div>
-    </div>
-  </div>
-  <br />
-  <br />
 
-  {% endblock content %}
+        {% for num in students.paginator.page_range %}
+          {% if students.number == num %}
+            <li class="page-item active">
+              <a class="page-link" href="#">{{ num }}</a>
+            </li>
+          {% else %}
+            <li class="page-item">
+              <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+            </li>
+          {% endif %}
+        {% endfor %}
+
+        {% if students.has_next %}
+          <li class="page-item">
+            <a class="page-link" href="?page={{ students.next_page_number }}">&raquo;</a>
+          </li>
+        {% else %}
+          <li class="page-item disabled">
+            <a class="page-link" href="#">&raquo;</a>
+          </li>
+        {% endif %}
+      </ul>
+    </div>
+    {% endif %}
+  </div>
 </div>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script>
+  $(document).ready(function() {
+    $('.grade-select').on('change', function() {
+      var studentId = $(this).data('student-id');
+      var lessonId = $(this).data('lesson-id');
+      var grade = $(this).val();
+      var csrfToken = $('[name=csrfmiddlewaretoken]').val();
+
+      $.ajax({
+        url: "{% url 'teacher_grading' lesson.slug %}",
+        method: 'POST',
+        data: {
+          'student': studentId,
+          'lesson': lessonId,
+          'grade': grade,
+          'csrfmiddlewaretoken': csrfToken,
+        },
+        success: function(response) {
+          if (response.success) {
+            $('#previous-grade-' + studentId).text(grade);
+            alert(response.message);
+          } else {
+            alert('There was an error updating the grade.');
+          }
+        },
+        error: function(response) {
+          alert('Failed to update grade. Please try again.');
+        }
+      });
+    });
+  });
+</script>
+
+{% endblock content %}

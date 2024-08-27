@@ -1,2 +1,5 @@
 from django import forms
-from .models import *
+
+
+class PhotoUploadForm(forms.Form):
+    photo = forms.ImageField()

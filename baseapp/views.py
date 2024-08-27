@@ -2,6 +2,7 @@ from accountapp.models import CustomUser, Student, Teacher
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import render, redirect
 from .models import Department, Lesson
+from .forms import PhotoUploadForm
 from django.views import View
 
 
@@ -29,7 +30,7 @@ class IndexView(LoginRequiredMixin, View):  # Main page
             'students_without_department': students_without_department,
             'departments': Department.objects.all(),
             'lessons': (
-                teacher.lesson_of_teacher.all() if teacher else None
+                teacher.lessons.all() if teacher else None
             ),
         }
 
@@ -71,3 +72,15 @@ class DepartmentRequestView(LoginRequiredMixin, View):
         student.save()
 
         return redirect('index')
+
+
+class UploadPhotoView(LoginRequiredMixin, View):
+
+    def post(self, request):
+        form = PhotoUploadForm(request.POST, request.FILES)
+        if form.is_valid():
+            user = CustomUser.objects.get(username=request.user.username)
+            user.photo = form.cleaned_data['photo']
+            user.save()
+            return redirect('index')
+        return render(request, 'baseapp/upload_photo.html', {'form': form})

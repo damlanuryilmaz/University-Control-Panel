@@ -39,8 +39,8 @@ class DepartmentRequest(LoginRequiredMixin, View):
         if form.is_valid():
             student_id = request.POST.get('student')
             student = Student.objects.get(id=student_id)
-            student.department_of_student = form.cleaned_data[
-                'department_of_student']
+            student.department = form.cleaned_data[
+                'department']
             student.department_request = False
             student.save()
             return redirect('department_request')

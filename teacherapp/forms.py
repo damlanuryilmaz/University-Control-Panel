@@ -1,19 +1,9 @@
+from crispy_forms.layout import Layout, Field, HTML
+from crispy_forms.helper import FormHelper
 from accountapp.models import Student
+from teacherapp.models import Grade
 from baseapp.models import Lesson
 from django import forms
-
-
-# class AddLessonForm(forms.ModelForm):
-#     class Meta:
-#         model = StudentLesson
-#         fields = ['lesson']
-
-#     lesson = forms.ModelChoiceField(
-#         queryset=Lesson.objects.all(), widget=forms.HiddenInput())
-
-
-# class SubmitLessonForm(forms.Form):
-#     confirm = forms.BooleanField(label='Send Your Adviser', required=True)
 
 
 class AddLessonForm(forms.ModelForm):
@@ -21,12 +11,12 @@ class AddLessonForm(forms.ModelForm):
     class Meta:
         # Subclass of ModelForm
         model = Student
-        fields = ['student_lessons']
+        fields = ['lessons']
         widgets = {
-            'student_lessons': forms.CheckboxSelectMultiple,
+            'lessons': forms.CheckboxSelectMultiple,
         }
         labels = {
-            'student_lessons': 'Select Lessons:',
+            'lessons': 'Select Lessons:',
         }
 
     def __init__(self, *args, **kwargs):
@@ -36,51 +26,66 @@ class AddLessonForm(forms.ModelForm):
 
         if self.user:
             student = Student.objects.get(user=self.user)
-            self.fields['student_lessons'].queryset = Lesson.objects.filter(
-                category=student.department_of_student)
-            # Update widget attribute to data attr (lesson name)
+            self.fields['lessons'].queryset = Lesson.objects.filter(
+                category=student.department)
+
+        self.helper = FormHelper()
+        self.helper.form_method = 'post'
+        self.helper.layout = Layout(
+            Field('lessons', wrapper_class='form-group row',
+                  css_class='form-check-input'),
+            HTML('<div class="error-message"></div>')
+        )
 
     def clean(self):
         cleaned_data = super().clean()
-        student_lessons = self.cleaned_data.get('student_lessons')
-        self.ects_check(student_lessons)
-        self.capacity_check(student_lessons)
-        self.course_hour_check(student_lessons)
+        lessons = self.cleaned_data.get('lessons')
+        self.capacity_check(lessons)
+        self.course_hour_check(lessons)
 
         return cleaned_data
 
-    def capacity_check(self, student_lessons):  # Department capacity check
+    def capacity_check(self, lessons):  # Department capacity check
         student = Student.objects.get(user=self.user)
-        total_ects = 0
-        department_capacity = student.department_of_student.capacity
+        total_acts = 0
+        department_capacity = student.department.capacity
 
-        for lesson in student_lessons:
-            total_ects += lesson.ects
+        for lesson in lessons:
+            total_acts += lesson.ects
 
-        if total_ects > department_capacity:
+        if total_acts > department_capacity:
             raise forms.ValidationError(
-                f'You have selected {total_ects} ECTS!')
+                f'You have selected {total_acts} ECTS!')
 
-        self.total_ects = total_ects
+        self.total_acts = total_acts
 
-    def ects_check(self, student_lessons):  # Course capacity check
-
-        for lesson in student_lessons:
-            if lesson.capacity == 0:
-                raise forms.ValidationError(
-                    f'Course capacity is full: {lesson.title}')
-
-    def course_hour_check(self, student_lessons):  # Course hour check
+    def course_hour_check(self, lessons):  # Course hour check
         course_week_set = set()
         course_hour_set = set()
-        for lesson in student_lessons:
+        for lesson in lessons:
             if lesson.day_of_week in course_week_set:
-                raise forms.ValidationError(
-                    f'Course hour conflict: {lesson.day_of_week} '
-                    f'{lesson.start_time} - {lesson.end_time}')
-            if lesson.start_time in course_hour_set:
-                raise forms.ValidationError(
-                    f'Course hour conflict: {lesson.day_of_week} '
-                    f'{lesson.start_time} - {lesson.end_time}')
+                if lesson.start_time in course_hour_set:
+                    raise forms.ValidationError(
+                        f'Course hour conflict: {lesson.day_of_week} '
+                        f'{lesson.start_time} - {lesson.end_time}')
+
             course_week_set.add(lesson.day_of_week)
             course_hour_set.add(lesson.start_time)
+
+
+class GradeForm(forms.ModelForm):
+    class Meta:
+        model = Grade
+        fields = ['grade']
+        labels = {
+            'grade': 'Select Grade:',
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.form_method = 'post'
+        self.helper.layout = Layout(
+            Field('grade', css_class='form-select')
+        )
+        self.fields['grade'].required = True
