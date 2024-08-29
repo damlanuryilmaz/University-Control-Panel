@@ -1,9 +1,10 @@
 from accountapp.models import CustomUser, Student, StudentLesson, Teacher
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import render, redirect
-from django.core.paginator import Paginator
 from .forms import AddLessonForm, GradeForm
+from django.core.paginator import Paginator
 from django.http import JsonResponse
+from django.contrib import messages
 from .models import Contact, Grade
 from baseapp.models import Lesson
 from django.views import View
@@ -216,7 +217,7 @@ class LessonSelectView(LoginRequiredMixin, View):
         return render(request, "teacherapp/selected_lessons.html", context)
 
 
-class ContactView(LoginRequiredMixin, View):
+class SendMessageView(LoginRequiredMixin, View):
     # Send the message to the teacher
     def get(self, request):
 
@@ -255,16 +256,21 @@ class ContactView(LoginRequiredMixin, View):
                 username=teacher_username),
         )
 
-        return redirect("index")
+        messages.success(request, "Your message has been sent successfully.")
+        return redirect("send_message")
 
 
 class MessageView(LoginRequiredMixin, View):
     # Show the messages that the teacher received
     def get(self, request):
+        messages_list = Contact.objects.filter(
+            teacher=request.user.id)
+        paginator = Paginator(messages_list, 5)
+        page_number = request.GET.get('page')
+        messages_from_student = paginator.get_page(page_number)
 
         context = {
-            "messages": Contact.objects.filter(
-                teacher=request.user.id),
+            "messages_from_student": messages_from_student,
             "user": CustomUser.objects.get(username=request.user.username),
         }
 
@@ -275,6 +281,7 @@ class DeleteMessageView(LoginRequiredMixin, View):
     def post(self, request, id):
         message = Contact.objects.get(id=id)
         message.delete()
+        messages.success(request, "The message has been deleted successfully.")
         return redirect("message")
 
 

@@ -1,9 +1,11 @@
+from accountapp.models import Student
 from django import forms
-from .models import Photo
 
 
-class PhotoUploadForm(forms.Form):
+class PhotoUploadForm(forms.ModelForm):
     class Meta:
-        model = Photo
-        fields = ['image']
-
+        model = Student
+        fields = ['profile_photo']
+        labels = {
+            'profile_photo': '',
+        }

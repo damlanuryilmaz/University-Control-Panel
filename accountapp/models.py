@@ -28,6 +28,9 @@ class Student(models.Model):
     adviser = models.ForeignKey(
         'Teacher', on_delete=models.CASCADE, blank=True, null=True)
     is_submitted = models.BooleanField(default=False)
+    profile_photo = models.ImageField(
+        upload_to='photos/', default='photos/default-profile-photo.jpg'
+    )
 
     def __str__(self):
         return f'{self.user.first_name} {self.user.last_name}'

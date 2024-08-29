@@ -7,12 +7,14 @@
         {% csrf_token %} {% if student.department_request == True %}
         <div class="alert alert-dismissible alert-light">You successfully send the department request!</div>
         {% else %}
-        <button type="submit" class="btn btn-primary btn-sm">Department Request</button>
+        <button type="submit" class="btn btn-primary btn-sm" 
+          onclick="return confirm('Are you sure you want to send the department request?')"
+        >Department Request</button>
         {% endif %}
       </form>
 
       {% else %}
-      <a href="{% url 'contact' %}" class="btn btn-primary">Contact</a>
+      <a href="{% url 'send_message' %}" class="btn btn-primary">Message Page</a>
       {% endif %}
     </div>
   </div>

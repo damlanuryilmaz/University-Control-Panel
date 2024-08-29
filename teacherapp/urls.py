@@ -1,7 +1,7 @@
 from django.urls import path
 from .views import (
     GradeView,
-    ContactView,
+    SendMessageView,
     MessageView,
     LessonSelectView,
     SubmitLessonsView,
@@ -24,7 +24,7 @@ urlpatterns = [
          name='submit_lessons'),
     path('selected_lessons/', LessonSelectView.as_view(),
          name='selected_lessons'),
-    path('contact/', ContactView.as_view(), name='contact'),
+    path('send_message/', SendMessageView.as_view(), name='send_message'),
     path('message/', MessageView.as_view(), name='message'),
     path('delete_message/<int:id>', DeleteMessageView.as_view(),
          name='delete_message'),

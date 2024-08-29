@@ -10,31 +10,37 @@ class IndexView(LoginRequiredMixin, View):  # Main page
     def get(self, request):
 
         user = CustomUser.objects.get(username=request.user.username)
-        students_without_department = Student.objects.filter(
-            department_request=True)
 
-        try:
-            teacher = Teacher.objects.get(user__username=request.user.username)
-        except Teacher.DoesNotExist:
-            teacher = None
+        if user.status == 'Student':
+            student = Student.objects.get(user=request.user)
+            students_without_department = Student.objects.filter(
+                department_request=True)
+            form = PhotoUploadForm()
 
-        try:
-            student = Student.objects.get(user__username=request.user.username)
-        except Student.DoesNotExist:
-            student = None
+            context = {
+                'user': user,
+                'form': form,
+                'student': student,
+                'students_without_department': students_without_department,
+            }
+            return render(request, 'baseapp/index.html', context)
 
-        context = {
-            'user': user,
-            'student': student,
-            'teacher': teacher,
-            'students_without_department': students_without_department,
-            'departments': Department.objects.all(),
-            'lessons': (
-                teacher.lessons.all() if teacher else None
-            ),
-        }
+        elif user.status == 'Teacher':
+            teacher = Teacher.objects.get(user=request.user)
+            context = {
+                'user': user,
+                'teacher': teacher,
+                'lessons': teacher.lessons.all(),
+            }
+            return render(request, 'baseapp/index.html', context)
 
-        return render(request, 'baseapp/index.html', context)
+        elif user.status == 'Admin':
+            context = {
+                'user': user,
+            }
+            return render(request, 'baseapp/index.html', context)
+
+        return render(request, 'accountapp/login.html')
 
 
 class DepartmentView(LoginRequiredMixin, View):  # Select the department
@@ -78,9 +84,11 @@ class UploadPhotoView(LoginRequiredMixin, View):
 
     def post(self, request):
         form = PhotoUploadForm(request.POST, request.FILES)
+
         if form.is_valid():
-            user = CustomUser.objects.get(username=request.user.username)
-            user.photo = form.cleaned_data['photo']
-            user.save()
+            student = Student.objects.get(user=request.user)
+            student.profile_photo = form.cleaned_data['profile_photo']
+            student.save()
             return redirect('index')
-        return render(request, 'baseapp/upload_photo.html', {'form': form})
+
+        return render(request, 'baseapp/upload_photo.html')

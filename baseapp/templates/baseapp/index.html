@@ -1,23 +1,26 @@
-{% extends 'base.html' %} {% load static %} {% block title %}Main Page{% endblock title %} {% block content %}
+{% extends 'base.html' %} {% load static %} {% load crispy_forms_tags %} {% block title %}Main Page{% endblock title %}
+{% block content %}
 
 <div class="container mt-5">
   <div class="row justify-content-center">
     {% if user.status == 'Student' %}
-    <div class="col-md-4">
-      <form method="post" enctype="multipart/form-data">
-        {% csrf_token %}
-        <div class="form-group">
-          <label for="photo">Upload Photo</label>
-          <input type="file" class="form-control-file" id="photo" name="photo">
-        </div>
-        <button type="submit" class="btn btn-primary mt-3">Upload</button>
-      </form>
-    </div>
-    {% endif %}
-      {% include 'baseapp/partials/_home_first_card.html' %} {% if user.status == 'Student' %} 
-      {% include 'baseapp/partials/_home_student.html' %} {% endif %}
-    </div>
-  </div>
 
-  {% endblock content %}
+    <div class="col-md-3">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <form method="post" enctype="multipart/form-data" action="{% url 'upload_photo' %}">
+            {% csrf_token %}
+            <div style="width: 200px; height: 200px; overflow: hidden; margin: 0 auto;">
+            <img src="{{ student.profile_photo.url }}" class="img-fluid d-block mx-auto" alt="Profile Photo" style="width: 100%; height: 100%; object-fit: cover;"/>
+            </div>
+            <br />
+            <div class="form-group">{{ form|crispy }}</div>
+            <button type="submit" class="btn btn-primary">Upload</button>
+          </form>
+        </div>
+      </div>
+    </div>
+    {% endif %} {% include 'baseapp/partials/_home_first_card.html' %} {% if user.status == 'Student' %} {% include 'baseapp/partials/_home_student.html' %} {% endif %}
+  </div>
 </div>
+{% endblock content %}

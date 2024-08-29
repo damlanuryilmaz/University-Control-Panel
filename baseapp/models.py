@@ -45,12 +45,3 @@ class Lesson(models.Model):
         if not self.slug:
             self.slug = slugify(self.title)
         super(Lesson, self).save(*args, **kwargs)
-
-
-class Photo(models.Model):
-    image = models.ImageField(upload_to='photos/')
-    student = models.ForeignKey(
-        'Student', on_delete=models.CASCADE, related_name='photos')
-
-    def __str__(self):
-        return self.title

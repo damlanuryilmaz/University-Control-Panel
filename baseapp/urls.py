@@ -1,8 +1,9 @@
 from django.urls import path
 from .views import (
     IndexView,
-    DepartmentView,
     LessonView,
+    DepartmentView,
+    UploadPhotoView,
     DepartmentRequestView,
 )
 
@@ -12,4 +13,5 @@ urlpatterns = [
     path('department/<slug:slug>/', LessonView.as_view(), name='lesson'),
     path('student_request/', DepartmentRequestView.as_view(),
          name='student_request'),
+    path('upload_photo/', UploadPhotoView.as_view(), name='upload_photo'),
 ]
