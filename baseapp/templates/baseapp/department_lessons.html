@@ -1,0 +1,27 @@
+{% extends 'base.html' %} {% block title %}Courses{% endblock title %} {% block content %}
+
+<div class="container mt-4">
+  <h3>{{ departments.title }}</h3>
+
+  <hr />
+  <table class="table">
+    <thead>
+      <tr>
+        <th scope="col"></th>
+        <th scope="col">Title</th>
+        <th scope="col">ECTS</th>
+      </tr>
+    </thead>
+    {% for lesson in lessons %}
+    <tbody>
+      <tr>
+        <th scope="row">{{ forloop.counter }}</th>
+        <td>{{ lesson.title }}</td>
+        <td>{{ lesson.ects }}</td>
+      </tr>
+    </tbody>
+    {% endfor %}
+  </table>
+</div>
+
+{% endblock content %}

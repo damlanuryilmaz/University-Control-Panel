@@ -5,30 +5,19 @@ from django.shortcuts import render, redirect
 from django.views import View
 
 
-class AssignLesson(LoginRequiredMixin, View):
-    def get(self, request):
-        return render(request, "adminapp/assign_lesson.html")
-
-
 class DepartmentRequest(LoginRequiredMixin, View):
     def get(self, request):
         students = Student.objects.filter(department_request=True)
-        students_wo_adviser = Student.objects.filter(adviser=None)
-        teachers = Teacher.objects.all()
         form = DepartmentRequestForm()
-        adviserform = AssignAdviserForm()
 
         context = {
             'form': form,
             'students': students,
-            'students_wo_adviser': students_wo_adviser,
-            'teacher': teachers,
-            'adviserform': adviserform,
         }
 
         return render(
             request,
-            "adminapp/department_and_adviser.html",
+            "adminapp/department_request.html",
             context
         )
 
@@ -53,11 +42,28 @@ class DepartmentRequest(LoginRequiredMixin, View):
                 'form': form
             }
             return render(request,
-                          "adminapp/department_and_adviser.html",
+                          "adminapp/department_request.html",
                           context)
 
 
 class AssignAdviser(LoginRequiredMixin, View):
+    def get(self, request):
+        students_wo_adviser = Student.objects.filter(adviser=None)
+        form = AssignAdviserForm()
+        teachers = Teacher.objects.all()
+
+        context = {
+            'students_wo_adviser': students_wo_adviser,
+            'form': form,
+            'teacher': teachers,
+        }
+
+        return render(
+            request,
+            "adminapp/assign_adviser.html",
+            context
+        )
+
     def post(self, request):
         form = AssignAdviserForm(request.POST)
 

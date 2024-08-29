@@ -38,7 +38,7 @@ class GradeView(LoginRequiredMixin, View):  # For teachers to assign grades
             'grade': grade,
         }
 
-        return render(request, 'teacherapp/grade.html', context)
+        return render(request, 'teacherapp/teacher_grading.html', context)
 
     def post(self, request, slug):
         student_id = request.POST.get('student')
@@ -103,6 +103,7 @@ class LessonSelectionView(LoginRequiredMixin, View):
 
             lessons = form.cleaned_data['lessons']
             student.acts = form.total_acts
+
             # Assign total ECTS to student
             student.save()
 
@@ -125,10 +126,7 @@ class LessonSelectionView(LoginRequiredMixin, View):
                 else:
                     return JsonResponse({
                         'success': False,
-                        'errors': {
-                            'lessons': [
-                                'Course capacity is full: ' + lesson.title]
-                        }
+                        'message': f'Course capacity is full: {lesson.title}'
                     }, status=400)
                 updated_lessons.append({
                     'id': lesson.id,
@@ -168,7 +166,7 @@ class LessonSelectionView(LoginRequiredMixin, View):
 class UpdateCapacityView(LoginRequiredMixin, View):
     def get(self, request):
         student = Student.objects.get(user=request.user)
-        lessons = Lesson.objects.filter(category=student.department)
+        lessons = Lesson.objects.filter(department=student.department)
 
         updated_lessons = [
             {"id": lesson.id, "capacity": lesson.capacity}
@@ -195,14 +193,15 @@ class UpdateWeekTableView(LoginRequiredMixin, View):
 
 class SubmitLessonsView(View):
     def post(self, request):
+
         student = Student.objects.get(user=request.user)
         student.is_submitted = True
         student.save()
 
-        return redirect('course_page')
+        return redirect('selected_lessons')
 
 
-class CoursePageView(LoginRequiredMixin, View):
+class LessonSelectView(LoginRequiredMixin, View):
     def get(self, request):
         student = Student.objects.get(user=request.user)
         lessons = student.lessons.all()
@@ -214,7 +213,7 @@ class CoursePageView(LoginRequiredMixin, View):
             'lessons': lessons,
         }
 
-        return render(request, "teacherapp/course_page.html", context)
+        return render(request, "teacherapp/selected_lessons.html", context)
 
 
 class ContactView(LoginRequiredMixin, View):
@@ -224,7 +223,11 @@ class ContactView(LoginRequiredMixin, View):
         context = {
             "teachers": CustomUser.objects.filter(status="Teacher"),
         }
-        return render(request, "teacherapp/contact.html", context)
+        return render(
+            request,
+            "teacherapp/message_to_teacher.html",
+            context
+        )
 
     def post(self, request):
 
@@ -239,7 +242,11 @@ class ContactView(LoginRequiredMixin, View):
                 "teachers": CustomUser.objects.filter(status="Teacher"),
                 "error": "Please enter a message.",
             }
-            return render(request, "teacherapp/contact.html", context)
+            return render(
+                request,
+                "teacherapp/message_to_teacher.html",
+                context
+            )
 
         Contact.objects.create(
             message=message,
@@ -261,7 +268,7 @@ class MessageView(LoginRequiredMixin, View):
             "user": CustomUser.objects.get(username=request.user.username),
         }
 
-        return render(request, "teacherapp/message.html", context)
+        return render(request, "teacherapp/teacher_messages.html", context)
 
 
 class DeleteMessageView(LoginRequiredMixin, View):
@@ -275,14 +282,12 @@ class CourseApprovalView(LoginRequiredMixin, View):
     def get(self, request):
         adviser = Teacher.objects.get(user=request.user)
         lesson_list = StudentLesson.objects.all()
-        selected_letter = request.GET.get('letter', 'A')
+        selected_letter = request.GET.get('letter', '')
         students = Student.objects.filter(
             is_submitted=True,
             adviser=adviser,
             user__first_name__istartswith=selected_letter
         ).order_by('user__first_name')
-
-        
 
         context = {
             'students': students,
@@ -290,3 +295,14 @@ class CourseApprovalView(LoginRequiredMixin, View):
             'selected_letter': selected_letter,
         }
         return render(request, "teacherapp/course_approval.html", context)
+
+    def post(self, request):
+        student_id = request.POST.get('student')
+        student = Student.objects.get(id=student_id)
+        StudentLesson.objects.delete(students=student)
+        student.is_approved = True
+        student.acts = 0
+
+        student.save()
+
+        return JsonResponse({'success': True})

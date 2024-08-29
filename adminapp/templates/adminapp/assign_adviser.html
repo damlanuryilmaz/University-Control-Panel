@@ -1,0 +1,49 @@
+{% extends "base.html" %} {% load static %} {% load crispy_forms_tags %} {% block title %}Assign Adviser{% endblock title %} {% block css_files %}
+<style>
+  .tablerow {
+    vertical-align: middle;
+  }
+</style>
+{% endblock css_files %} {% block content %}
+
+<div class="container">
+  <div class="row">
+    <h3 class="mt-4 mb-4">Assign Adviser</h3>
+    {% if not students_wo_adviser %}
+    <div class="d-flex justify-content-center">
+      <div class="alert alert-info" role="alert">All students assigned.</div>
+    </div>
+    {% else %}
+
+    <table class="table">
+      <tbody>
+        {% for student in students_wo_adviser %}
+        <form method="POST" action="{% url 'assign_adviser' %}">
+          {% csrf_token %}
+          <input type="hidden" name="student" value="{{ student.id }}" />
+          <script>
+            console.log("{{ student.id }}");
+          </script>
+          <tr>
+            <th scope="row" class="tablerow">{{ forloop.counter }}</th>
+            <td class="tablerow">{{ student }}</td>
+            <td class="tablerow">{{ form|crispy }}</td>
+            <td class="tablerow button">
+              <button
+                type="submit"
+                class="btn btn-primary btn-sm mt-2"
+                onclick="return confirm('Are you sure you want to assign adviser to {{student.user.first_name|title}} {{student.user.last_name|title}}?')"
+              >
+                Assign Adviser
+              </button>
+            </td>
+          </tr>
+        </form>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% endif %}
+  </div>
+</div>
+
+{% endblock content %}

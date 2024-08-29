@@ -61,10 +61,10 @@
           <p>You must choose a maximum of {{ department_capacity }} ECTS.</p>
         </div>
       <div class="col-md-2">
+
         <form method="POST" action="{% url 'submit_lessons' %}">
           {% csrf_token %}
-                    
-        <button type="submit" class="btn btn-info">Send to Adviser</button>
+        <button type="submit" class="btn btn-info" id="submit-btn">Send to Adviser</button>
         </form>
       
       </div>
@@ -155,7 +155,10 @@
       <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 
       <script>
+        
         $(document).ready(function () {
+
+          var lastClickedCheckbox = null;
 
           function updateSchedule() {
             $.ajax({
@@ -175,17 +178,14 @@
                 error: function () {
                     console.log("Error fetching schedule data.");
                 }
+            
             });
         }
 
         // Initial population of schedule on page load
         updateSchedule();
 
-        // Optionally, you can also update the schedule when checkboxes change
-        $("#lesson-selection-form").on("change", 'input[type="checkbox"]', function () {
-            // Perform any actions needed when a checkbox is changed, then update the schedule
-            updateSchedule();
-        });
+
 
           function saveCheckboxState() {
             var selectedLessons = [];
@@ -209,9 +209,6 @@
           restoreCheckboxState();
 
           // Save checkbox state on change
-          $("#lesson-selection-form").on("change", 'input[type="checkbox"]', function () {
-            saveCheckboxState();
-          });
 
           function updateCapacities() {
             $.ajax({
@@ -237,8 +234,13 @@
           setInterval(updateCapacities, 10000);
 
           $("#lesson-selection-form").on("change", 'input[type="checkbox"]', function () {
-            var clickedCheckbox = $(this);
+            lastClickedCheckbox = $(this);
             $("input[type='checkbox']").prop("disabled", false);
+            saveCheckboxState();
+            toggleSubmitButton();
+            updateSchedule();
+
+
             $.ajax({
               url: "{% url 'lesson_selection' %}",
               type: "POST",
@@ -277,15 +279,31 @@
                   console.log("Failed to update lesson.");
                 }
               },
-              error: function () {
+              error: function (response) {
+                lastClickedCheckbox.prop('checked', false); 
                 console.log("Error to update lesson.");
-                $("#error-message").text("You cannot choose this lesson. Please drop it.");
+                console.log(response);
+                if (response.responseJSON.message) {
+                  alert("Error: " + response.responseJSON.message);
+                } else {
+                  alert("Error: " + response.responseJSON.errors.__all__[0])
+                }
 
-                // Disable other checkboxes except the clicked one
-                $("input[type='checkbox']").not(clickedCheckbox).prop("disabled", true);
+                toggleSubmitButton(false); // Disable submit button on error
+                
               },
             });
           });
+          function toggleSubmitButton() {
+            if ($('input[type="checkbox"]:checked').length === 0) {
+              $('#submit-btn').prop('disabled', true);
+            } else {
+              $('#submit-btn').prop('disabled', false);
+            }
+          }
+
+          // Check initial state of the submit button on page load
+          toggleSubmitButton();
         });
       </script>
 

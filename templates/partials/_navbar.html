@@ -57,7 +57,7 @@
         {% elif user.status == "Student" %}
         <li class="nav-item me-3">
           {% if user.student.is_submitted %}
-          <a class="nav-link" href="{% url 'course_page' %}">Course</a>
+          <a class="nav-link" href="{% url 'selected_lessons' %}">Course</a>
           {% else %}
           <a class="nav-link" href="{% url 'lesson_selection' %}">Course</a>
           {% endif %}
@@ -68,7 +68,8 @@
             Student
           </a>
           <ul class="dropdown-menu">
-            <li><a class="dropdown-item" href="{% url 'department_request' %}">Request</a></li>
+            <li><a class="dropdown-item" href="{% url 'department_request' %}">Department Request</a></li>
+            <li><a class="dropdown-item" href="{% url 'assign_adviser' %}">Assign Adviser</a></li>
           </ul>
         </li>
         <li class="nav-item dropdown me-3">
@@ -76,7 +77,7 @@
             Teacher
           </a>
           <ul class="dropdown-menu">
-            <li><a class="dropdown-item" href="{% url 'assign_lesson' %}">Lesson</a></li>
+            <li><a class="dropdown-item" href="">Lesson</a></li>
           </ul>
         </li>
         {% endif %} {% if not user.status == 'Admin' %}

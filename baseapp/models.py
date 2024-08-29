@@ -28,7 +28,7 @@ class Lesson(models.Model):
 
     title = models.CharField(max_length=100)
     ects = models.IntegerField()
-    category = models.ManyToManyField(Department)
+    department = models.ManyToManyField(Department)
     capacity = models.IntegerField(default=3)  # Course capacity
     day_of_week = models.CharField(
         max_length=9, choices=DAY_OF_WEEK)
@@ -45,3 +45,12 @@ class Lesson(models.Model):
         if not self.slug:
             self.slug = slugify(self.title)
         super(Lesson, self).save(*args, **kwargs)
+
+
+class Photo(models.Model):
+    image = models.ImageField(upload_to='photos/')
+    student = models.ForeignKey(
+        'Student', on_delete=models.CASCADE, related_name='photos')
+
+    def __str__(self):
+        return self.title

@@ -55,12 +55,12 @@ class LessonView(LoginRequiredMixin, View):
     # Show the lessons of the department
     def get(self, request, slug):
         context = {
-            'lessons': Lesson.objects.filter(category__slug=slug),
+            'lessons': Lesson.objects.filter(department__slug=slug),
             # Get the lessons of the department with the slug
             'all_lessons': Lesson.objects.all(),
             'departments': Department.objects.get(slug=slug),
         }
-        return render(request, 'baseapp/lesson.html', context)
+        return render(request, 'baseapp/department_lessons.html', context)
 
 
 class DepartmentRequestView(LoginRequiredMixin, View):

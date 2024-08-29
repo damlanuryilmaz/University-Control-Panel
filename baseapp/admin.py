@@ -6,7 +6,7 @@ from .models import Lesson, Department
 
 class LessonAdmin(admin.ModelAdmin):
     list_display = ['title', 'ects', 'day_of_week', 'start_time', 'end_time']
-    list_filter = ['category']
+    list_filter = ['department']
     search_fields = ['title']
 
 

@@ -27,7 +27,7 @@ class AddLessonForm(forms.ModelForm):
         if self.user:
             student = Student.objects.get(user=self.user)
             self.fields['lessons'].queryset = Lesson.objects.filter(
-                category=student.department)
+                department=student.department)
 
         self.helper = FormHelper()
         self.helper.form_method = 'post'

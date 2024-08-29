@@ -1,51 +1,75 @@
 {% extends 'base.html' %} {% load crispy_forms_tags %} {% load static %} {% block title %}Course Approval{% endblock title %} {% block content %}
-
 <div class="container">
   <div class="row mt-4">
     <h3 class="mb-3">Course Approval</h3>
     <hr />
-    <div class="letter-navigation mb-3">
-      <ul class="pagination pagination-sm justify-content-center">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <ul class="pagination pagination-sm mb-0">
+        <li class="page-item {% if not selected_letter %}active{% endif %}">
+          <a class="page-link font-weight-bold" href="?">All Students</a>
+        </li>
         {% for letter in "ABCDEFGHIJKLMNOPQRSTUVWXYZ" %}
-        <li class="page-item {% if selected_letter == letter %}active{% endif %}">
-          <a class="page-link" href="?letter={{ letter }}">{{ letter }}</a>
+        <li class="page-item {% if selected_letter == letter %}active bg-primary text-white{% endif %}">
+          <a class="page-link font-weight-bold" href="?letter={{ letter }}">{{ letter }}</a>
         </li>
         {% endfor %}
       </ul>
+
+      <div>
+        <button class="btn btn-outline-secondary btn-sm me-2" id="expand-all">Expand All</button>
+        <button class="btn btn-outline-secondary btn-sm" id="collapse-all">Collapse All</button>
+      </div>
     </div>
+
     <div class="accordion" id="accordionExample">
       {% for student in students %}
-      <div class="accordion-item">
-        <h2 class="accordion-header" id="heading{{forloop.counter}}">
-          <button
-            class="accordion-button"
-            type="button"
-            data-bs-toggle="collapse"
-            data-bs-target="#collapse{{forloop.counter}}"
-            aria-expanded="false"
-            aria-controls="collapse{{forloop.counter}}"
-          >
-            {{ student.user.first_name }} {{ student.user.last_name }}
-          </button>
-        </h2>
-        <div id="collapse{{forloop.counter}}" class="accordion-collapse collapse">
-          <div class="accordion-body">
-            <ul class="list-group list-group-flush">
-              {% for lesson in lessons %} {% if lesson.students == student %}
-              <li class="list-group-item">{{ lesson.lessons }}</li>
-              {% endif %} {% endfor %}
-            </ul>
+      <form method="POST" action="{% url 'submit_lessons' %}">
+        {% csrf_token %}
+        <div class="accordion-item">
+          <h2 class="accordion-header" id="heading{{ forloop.counter }}">
+            <button
+              class="accordion-button"
+              type="button"
+              data-bs-toggle="collapse"
+              data-bs-target="#collapse{{ forloop.counter }}"
+              aria-expanded="false"
+              aria-controls="collapse{{ forloop.counter }}"
+            >
+              {{ student.user.first_name }} {{ student.user.last_name }}
+            </button>
+          </h2>
+          <div id="collapse{{ forloop.counter }}" class="accordion-collapse collapse">
+            <div class="accordion-body">
+              <ul class="list-group list-group-flush">
+                {% for lesson in lessons %} {% if lesson.students == student %}
+                <li class="list-group-item">{{ lesson.lessons }}</li>
+                {% endif %} {% endfor %}
+              </ul>
+              <div class="d-flex justify-content-end">
+                <button type="submit" class="btn btn-danger">Delete All</button>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
-      <br />
-      <br />
-      <br />
-      <br />
+      </form>
       {% endfor %}
-
     </div>
   </div>
 </div>
 
+<script>
+  document.getElementById("expand-all").addEventListener("click", function () {
+    var accordions = document.querySelectorAll(".accordion-collapse");
+    accordions.forEach(function (accordion) {
+      accordion.classList.add("show");
+    });
+  });
+
+  document.getElementById("collapse-all").addEventListener("click", function () {
+    var accordions = document.querySelectorAll(".accordion-collapse");
+    accordions.forEach(function (accordion) {
+      accordion.classList.remove("show");
+    });
+  });
+</script>
 {% endblock content %}

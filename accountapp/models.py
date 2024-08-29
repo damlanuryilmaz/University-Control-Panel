@@ -25,7 +25,6 @@ class Student(models.Model):
     lessons = models.ManyToManyField(Lesson, blank=True,
                                      through='StudentLesson')
     department_request = models.BooleanField(default=False)
-    year = models.IntegerField(default=1)
     adviser = models.ForeignKey(
         'Teacher', on_delete=models.CASCADE, blank=True, null=True)
     is_submitted = models.BooleanField(default=False)
