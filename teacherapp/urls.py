@@ -1,9 +1,6 @@
 from django.urls import path
 from .views import (
-    GradeView,
-    SendMessageView,
-    MessageView,
-    LessonSelectView,
+    GradeView, SendMessageView, MessageView, LessonSelectView,
     SubmitLessonsView,
     DeleteMessageView,
     UpdateCapacityView,

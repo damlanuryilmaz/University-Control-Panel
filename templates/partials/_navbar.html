@@ -72,14 +72,6 @@
             <li><a class="dropdown-item" href="{% url 'assign_adviser' %}">Assign Adviser</a></li>
           </ul>
         </li>
-        <li class="nav-item dropdown me-3">
-          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-            Teacher
-          </a>
-          <ul class="dropdown-menu">
-            <li><a class="dropdown-item" href="">Lesson</a></li>
-          </ul>
-        </li>
         {% endif %} {% if not user.status == 'Admin' %}
         <li class="nav-item">
           <a class="nav-link">Welcome, {{ user.first_name|title }}</a>

@@ -12,12 +12,7 @@
       <p class="card-text mb-3">You have not been assigned to any department yet. Please contact the administrator.</p>
       {% else %}
       <p class="card-text mb-3"><strong>Department:</strong> {{ student.department }}</p>
-      {% endif %} 
-      {% elif user.status == 'Teacher' %}
-      <p class="card-text mb-3"><strong>Lessons:</strong></p>
-      {% for lesson in teacher.lessons.all%}
-      <p class="card-text mb-3">{{ lesson.title }}</p>
-      {% endfor %} 
+      {% endif %}  
       {% endif %}
     </div>
   </div>

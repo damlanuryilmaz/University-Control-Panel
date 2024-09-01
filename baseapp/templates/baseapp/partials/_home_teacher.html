@@ -1,0 +1,29 @@
+<div class="col-md-7">
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <h5 class="card-title mb-3">Information About Courses</h5>
+      <table class="table table-borderless">
+        <tbody>
+          {% for lesson_data in lessons_with_student_count %}
+          <tr>
+            <td>{{ lesson_data.lesson.title }}</td>
+            <td>
+              {{ lesson_data.lesson.day_of_week }} {{ lesson_data.lesson.start_time|date:"h:i A" }} - {{ lesson_data.lesson.end_time|date:"h:i A" }}
+            </td>
+            <td>
+                {% if lesson_data.student_count == 0 %}
+                No student enrolled
+                {% elif lesson_data.student_count == 1 %}
+                {{ lesson_data.student_count }} student enrolled
+                {% else %}
+                {{ lesson_data.student_count }} students enrolled
+                {% endif %}
+            </td>
+                
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

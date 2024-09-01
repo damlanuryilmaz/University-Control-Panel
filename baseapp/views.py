@@ -27,20 +27,29 @@ class IndexView(LoginRequiredMixin, View):  # Main page
 
         elif user.status == 'Teacher':
             teacher = Teacher.objects.get(user=request.user)
+            lessons_with_student_count = [
+                {'lesson': lesson, 'student_count': lesson.student_set.count()}
+                for lesson in teacher.lessons.all()
+            ]
+
             context = {
                 'user': user,
                 'teacher': teacher,
-                'lessons': teacher.lessons.all(),
+                'lessons_with_student_count': lessons_with_student_count,
             }
             return render(request, 'baseapp/index.html', context)
 
         elif user.status == 'Admin':
+            students_wo_department = Student.objects.filter(department=None)
+            students_wo_adviser = Student.objects.filter(adviser=None)
             context = {
                 'user': user,
+                'students_wo_department': students_wo_department,
+                'students_wo_adviser': students_wo_adviser,
             }
             return render(request, 'baseapp/index.html', context)
 
-        return render(request, 'accountapp/login.html')
+        return redirect('login')
 
 
 class DepartmentView(LoginRequiredMixin, View):  # Select the department

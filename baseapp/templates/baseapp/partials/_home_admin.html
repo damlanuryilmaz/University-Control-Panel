@@ -1,0 +1,19 @@
+<div class="col-md-5">
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <h5 class="card-title mb-3">Information About Students</h5>
+      <table class="table table-borderless">
+        <tbody>
+          <tr>
+            <td>Students Without Department</td>
+            <td>{% if not students_wo_department %} All assigned {% else %} {{ students_wo_department|length }} students {% endif %}</td>
+          </tr>
+          <tr>
+            <td>Students Without Adviser</td>
+            <td>{% if not students_wo_adviser %} All assigned {% else %} {{ students_wo_adviser|length }} students {% endif %}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
