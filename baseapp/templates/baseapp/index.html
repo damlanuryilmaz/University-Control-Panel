@@ -20,7 +20,6 @@
         </div>
       </div>
     </div>
-    {% include 'baseapp/partials/_home_student.html' %}
     {% endif %} {% if not user.status == 'Admin' %} 
     {% include 'baseapp/partials/_home_first_card.html' %} 
     {% endif %}
@@ -28,6 +27,8 @@
     {% include 'baseapp/partials/_home_admin.html' %}
     {% elif user.status == 'Teacher' %} 
     {% include 'baseapp/partials/_home_teacher.html' %} 
+    {% elif user.status == 'Student' %} 
+    {% include 'baseapp/partials/_home_student.html' %}
     {% endif %}
   </div>
 </div>

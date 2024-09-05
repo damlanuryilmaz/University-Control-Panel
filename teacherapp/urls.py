@@ -2,6 +2,7 @@ from django.urls import path
 from .views import (
     GradeView, SendMessageView, MessageView, LessonSelectView,
     SubmitLessonsView,
+    StudentFutureView,
     DeleteMessageView,
     UpdateCapacityView,
     CourseApprovalView,
@@ -27,4 +28,7 @@ urlpatterns = [
          name='delete_message'),
     path('course_approval/', CourseApprovalView.as_view(),
          name='course_approval'),
+    path('my_future/',
+         StudentFutureView.as_view(),
+         name='student_future'),
 ]

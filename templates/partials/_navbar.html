@@ -62,6 +62,9 @@
           <a class="nav-link" href="{% url 'lesson_selection' %}">Course</a>
           {% endif %}
         </li>
+        <li class="nav-item me-3">
+          <a class="nav-link" href="{% url 'student_future' %}">My Future</a>
+        </li>
         {% elif user.status == 'Admin' %}
         <li class="nav-item dropdown me-3">
           <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">

@@ -1,7 +1,7 @@
 from crispy_forms.layout import Layout, Field, HTML
+from teacherapp.models import Grade, CareerSuggestion
 from crispy_forms.helper import FormHelper
 from accountapp.models import Student
-from teacherapp.models import Grade
 from baseapp.models import Lesson
 from django import forms
 
@@ -89,3 +89,40 @@ class GradeForm(forms.ModelForm):
             Field('grade', css_class='form-select')
         )
         self.fields['grade'].required = True
+
+
+class FutureCareerForm(forms.Form):
+    # Form for students to select future careers
+
+    # # Fetch unique projects and interested_domain values from the database
+    # unique_projects = StudentCareer.objects.values_list(
+    #     'project', flat=True).distinct()
+    # unique_domains = StudentCareer.objects.values_list(
+    #     'interested_domain', flat=True).distinct()
+
+    # # Convert querysets to list of tuples
+    # project_choices = [(project, project) for project in unique_projects]
+    # domain_choices = [(domain, domain) for domain in unique_domains]
+
+    # interest_domain = forms.MultipleChoiceField(
+    #     choices=domain_choices,
+    #     widget=forms.CheckboxSelectMultiple(attrs={'class': 'form-control'},),
+    #     label='Interested Fields',
+    #     required=True,
+    # )
+
+    # projects = forms.MultipleChoiceField(
+    #     choices=project_choices,
+    #     widget=forms.CheckboxSelectMultiple(attrs={'class': 'form-control'}),
+    #     required=True,
+    # )
+
+    # python = forms.ChoiceField(choices=StudentCareer.COURSE_LEVEL,
+    #                            widget=forms.RadioSelect)
+
+    # sql = forms.ChoiceField(choices=StudentCareer.COURSE_LEVEL,
+    #                         widget=forms.RadioSelect, label='SQL')
+
+    # java = forms.ChoiceField(choices=StudentCareer.COURSE_LEVEL,
+    #                          widget=forms.RadioSelect)
+    pass
