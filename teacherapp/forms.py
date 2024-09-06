@@ -94,35 +94,66 @@ class GradeForm(forms.ModelForm):
 class FutureCareerForm(forms.Form):
     # Form for students to select future careers
 
-    # # Fetch unique projects and interested_domain values from the database
-    # unique_projects = StudentCareer.objects.values_list(
-    #     'project', flat=True).distinct()
-    # unique_domains = StudentCareer.objects.values_list(
-    #     'interested_domain', flat=True).distinct()
+    operating_sys_percentage = forms.DecimalField(
+        max_digits=5, decimal_places=2, label="Operating System Percentage")
+    algorithms_percentage = forms.DecimalField(
+        max_digits=5, decimal_places=2, label="Algorithms Percentage")
+    programming_percentage = forms.DecimalField(
+        max_digits=5, decimal_places=2, label="Programming Percentage")
+    software_eng_percentage = forms.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        label="Software Engineering Percentage"
+    )
+    computer_network_percentage = forms.DecimalField(
+        max_digits=5, decimal_places=2, label="Computer Network Percentage")
+    electronics_percentage = forms.DecimalField(max_digits=5, decimal_places=2,
+                                                label="Electronics Percentage")
+    computer_arc_percentage = forms.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        label="Computer Architecture Percentage"
+    )
+    math_percentage = forms.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        label="Math Percentage"
+    )
+    communication_skills_percentage = forms.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        label="Communication Skills Percentage"
+    )
+    coding_skills = forms.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        label="Coding Skills"
+    )
 
-    # # Convert querysets to list of tuples
-    # project_choices = [(project, project) for project in unique_projects]
-    # domain_choices = [(domain, domain) for domain in unique_domains]
+    def clean(self):
+        cleaned_data = super().clean()
+        percentage_fields = [
+            'operating_sys_percentage',
+            'algorithms_percentage',
+            'programming_percentage',
+            'software_eng_percentage',
+            'computer_network_percentage',
+            'electronics_percentage',
+            'computer_arc_percentage',
+            'math_percentage',
+            'communication_skills_percentage',
+            'coding_skills'
+        ]
 
-    # interest_domain = forms.MultipleChoiceField(
-    #     choices=domain_choices,
-    #     widget=forms.CheckboxSelectMultiple(attrs={'class': 'form-control'},),
-    #     label='Interested Fields',
-    #     required=True,
-    # )
+        for field in percentage_fields:
+            value = cleaned_data.get(field)
+            if value is not None:
+                if value < 0 or value > 100:
+                    self.add_error(
+                        field,
+                        forms.ValidationError(
+                            "Number must be between 0 and 100."
+                        )
+                    )
 
-    # projects = forms.MultipleChoiceField(
-    #     choices=project_choices,
-    #     widget=forms.CheckboxSelectMultiple(attrs={'class': 'form-control'}),
-    #     required=True,
-    # )
-
-    # python = forms.ChoiceField(choices=StudentCareer.COURSE_LEVEL,
-    #                            widget=forms.RadioSelect)
-
-    # sql = forms.ChoiceField(choices=StudentCareer.COURSE_LEVEL,
-    #                         widget=forms.RadioSelect, label='SQL')
-
-    # java = forms.ChoiceField(choices=StudentCareer.COURSE_LEVEL,
-    #                          widget=forms.RadioSelect)
-    pass
+        return cleaned_data

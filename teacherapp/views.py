@@ -1,18 +1,16 @@
 from accountapp.models import CustomUser, Student, StudentLesson, Teacher
-from sklearn.preprocessing import OrdinalEncoder, LabelEncoder
 from .forms import AddLessonForm, GradeForm, FutureCareerForm
 from django.contrib.auth.mixins import LoginRequiredMixin
-from sklearn.model_selection import train_test_split
-from sklearn.ensemble import RandomForestClassifier
-from .models import Contact, Grade, CareerSuggestion
 from django.shortcuts import render, redirect
 from django.core.paginator import Paginator
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import accuracy_score, classification_report
 from django.http import JsonResponse
 from django.contrib import messages
+from .models import Contact, Grade, CareerSuggestion
 from baseapp.models import Lesson
 from django.views import View
 import pandas as pd
+import numpy as np
 import joblib
 
 
@@ -322,9 +320,170 @@ class CourseApprovalView(LoginRequiredMixin, View):
 
 
 class StudentFutureView(View):
-    def get(self, request):
+    model = None
+    normalizer = None
+    label_encoder_target = None
+    one_hot_encoder = None
+    feature_names = None
 
-        return render(request, 'teacherapp/student_future.html')
+    def get(self, request):
+        form = FutureCareerForm()
+
+        context = {
+            'form': form,
+        }
+
+        return render(request, 'teacherapp/student_future.html', context)
+            
+            # Create a career suggestion object
+            # form datasını kullan 
+            # studet_analysis = suggestion(data)
+            # student_analysis.save()
+            
+            # df = pd.DataFrame(student_analysis) sudo kodddur dogrusunu bulunuz.
+            # egıttıgın yere kadar anı ıslemlerı yap,
+            # opsıyonel olarak utıls yazıp her iki yerdede aynı methodlar çağırılabilir
+            # modeli loadla ve tahmın yap
+            #tahmini döndür
+            
+    def post(self, request, *args, **kwargs):
+        form = FutureCareerForm(request.POST)
+        if form.is_valid():
+            # Extract data from form
+            data = {
+                'operating_sys_percentage': form.cleaned_data['operating_sys_percentage'],
+                'algorithms_percentage': form.cleaned_data['algorithms_percentage'],
+                'programming_percentage': form.cleaned_data['programming_percentage'],
+                'software_eng_percentage': form.cleaned_data['software_eng_percentage'],
+                'computer_network_percentage': form.cleaned_data['computer_network_percentage'],
+                'electronics_percentage': form.cleaned_data['electronics_percentage'],
+                'computer_arc_percentage': form.cleaned_data['computer_arc_percentage'],
+                'math_percentage': form.cleaned_data['math_percentage'],
+                'communication_skills_percentage': form.cleaned_data['communication_skills_percentage'],
+                'coding_skills': form.cleaned_data['coding_skills'],
+            }
+
+            # Convert data to a numpy array and normalize
+            input_data = np.array([list(data.values())])
+            normalizer = joblib.load('static/models/normalizer.pkl')
+            input_data_normalized = normalizer.transform(input_data)
+
+            # Load the model and make a prediction
+            model = joblib.load('static/models/career_suggestion_model.pkl')
+            prediction = model.predict(input_data_normalized)
+
+            # Load the label encoder to decode the prediction
+            label_encoder = joblib.load('static/models/label_encoder.pkl')
+            suggested_career = label_encoder.inverse_transform(prediction)[0]
+
+            context = {
+                'form': form,
+                'suggested_career': suggested_career,
+            }
+
+            return render(request, 'teacherapp/student_future.html', context)
+
+        else:
+            context = {
+                'form': form,
+            }
+            return render(request, 'teacherapp/student_future.html', context)
+
+    # def dispatch(self, request, *args, **kwargs):
+    #     # Load model and encoders
+    #     if not self.model:
+    #         self.model = joblib.load('random_forest_model.pkl')
+    #     if not self.normalizer:
+    #         self.normalizer = joblib.load('normalizer.pkl')
+    #     if not self.label_encoder_target:
+    #         self.label_encoder_target = joblib.load('label_encoder_target.pkl')
+    #     if not self.feature_names:
+    #         self.feature_names = joblib.load('feature_names.pkl')
+
+    #     return super().dispatch(request, *args, **kwargs)
+
+    # def post(self, request):
+    #     form = FutureCareerForm(request.POST)
+
+    #     if form.is_valid():
+    #         # Process the form data
+    #         form_data = {
+    #             'operating_sys_percentage': form.cleaned_data[
+    #                 'operating_sys_percentage'],
+    #             'algorithms_percentage': form.cleaned_data[
+    #                 'algorithms_percentage'],
+    #             'programming_percentage': form.cleaned_data[
+    #                 'programming_percentage'],
+    #             'software_eng_percentage': form.cleaned_data[
+    #                 'software_eng_percentage'],
+    #             'computer_network_percentage': form.cleaned_data[
+    #                 'computer_network_percentage'],
+    #             'electronics_percentage': form.cleaned_data[
+    #                 'electronics_percentage'],
+    #             'computer_arc_percentage': form.cleaned_data[
+    #                 'computer_arc_percentage'],
+    #             'math_percentage': form.cleaned_data['math_percentage'],
+    #             'communication_skills_percentage': form.cleaned_data[
+    #                 'communication_skills_percentage'],
+    #             'coding_skills': form.cleaned_data['coding_skills'],
+    #             'is_self_learning': form.cleaned_data['is_self_learning'],
+    #             'certificate': form.cleaned_data['certificate'],
+    #             'interested_subject': form.cleaned_data['interested_subject'],
+    #             'is_in_teams': form.cleaned_data['is_in_teams'],
+    #             'is_introvert': form.cleaned_data['is_introvert'],
+    #         }
+
+    #         # Prepare data for normalization and encoding
+    #         numeric_data = np.array([[form_data['operating_sys_percentage'],
+    #                                   form_data['algorithms_percentage'],
+    #                                   form_data['programming_percentage'],
+    #                                   form_data['software_eng_percentage'],
+    #                                   form_data['computer_network_percentage'],
+    #                                   form_data['electronics_percentage'],
+    #                                   form_data['computer_arc_percentage'],
+    #                                   form_data['math_percentage'],
+    #                                   form_data[
+    #                                       'communication_skills_percentage'],
+    #                                   form_data['coding_skills']]])
+
+    #         # Normalize numeric fields
+    #         normalized_data = self.normalizer.transform(numeric_data)
+
+    #         # Categorical fields for one-hot encoding
+    #         categorical_data = pd.DataFrame([{
+    #             'is_self_learning': form_data['is_self_learning'],
+    #             'certificate': form_data['certificate'],
+    #             'interested_subject': form_data['interested_subject'],
+    #             'is_in_teams': form_data['is_in_teams'],
+    #             'is_introvert': form_data['is_introvert']
+    #         }], columns=self.one_hot_encoder.get_feature_names_out())
+
+    #         # One-hot encode categorical fields
+    #         encoded_categorical_data = self.one_hot_encoder.transform(
+    #             categorical_data)
+
+    #         # Concatenate numeric and encoded categorical data
+    #         X_input = np.concatenate(
+    #             [normalized_data, encoded_categorical_data], axis=1)
+
+    #         # Make a prediction
+    #         prediction = self.model.predict(X_input)
+
+    #         # Decode the predicted career back to its original label
+    #         predicted_career = self.label_encoder_target.inverse_transform(
+    #             prediction)[0]
+
+    #         context = {
+    #             'form': form,
+    #             'predicted_career': predicted_career,
+    #         }
+
+    #         return render(request, 'teacherapp/student_future.html', context)
+
+    #     context = {
+    #         'form': form,
+    #     }
+    #     return render(request, 'teacherapp/student_future.html', context)
 
 
 # class StudentFutureView(View):
@@ -488,7 +647,8 @@ class StudentFutureView(View):
 #         df = pd.get_dummies(df, columns=one_hot_columns)
 
 #         label_encoder = LabelEncoder()
-#         df['future_career'] = label_encoder.fit_transform(df['future_career'])
+#         df['future_career'] = label_encoder.fit_transform(df['future_career'
+# ])
 
 #         X = df.drop('future_career', axis=1)  # Features
 #         Y = df['future_career']               # Target variable

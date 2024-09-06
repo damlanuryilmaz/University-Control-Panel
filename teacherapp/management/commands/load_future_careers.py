@@ -6,13 +6,15 @@ from teacherapp.models import CareerSuggestion
 import pandas as pd
 import joblib
 import csv
-import io
 
 
 class Command(BaseCommand):
     help = 'Load recommendations from a csv file'
 
     def handle(self, *args, **kwargs):
+        self.train_and_save_model()
+
+    def save_model(self):
         with open('static/data/future_career.csv', 'r') as file:
             reader = csv.reader(file)
             next(reader)  # Skip the header
@@ -28,35 +30,55 @@ class Command(BaseCommand):
                     math_percentage=row[7],
                     communication_skills_percentage=row[8],
                     coding_skills=row[12],
-                    is_self_learning=row[15],
-                    certificate=row[17],
-                    interested_subject=row[22],
-                    is_in_teams=row[36],
-                    is_introvert=row[37],
                     suggested_career=row[38],
                 )
-        self.stdout.write(
-            self.style.SUCCESS('Careers loaded successfully!')
-        )
+        self.stdout.write(self.style.SUCCESS('Careers loaded successfully!'))
 
     def train_and_save_model(self):
         data = CareerSuggestion.objects.all().values()
         df = pd.DataFrame(data)
 
-        label_encoder = LabelEncoder()
-
-        # Categorical columns
-        label_columns = [
-            'is_self_learning',
-            'is_in_teams',
-            'is_introvert',
-            'suggested_career',
-            'certificate',
-            'interested_subject'
+        normalize_columns = [
+            'operating_sys_percentage',
+            'algorithms_percentage',
+            'programming_percentage',
+            'software_eng_percentage',
+            'computer_network_percentage',
+            'electronics_percentage',
+            'computer_arc_percentage',
+            'math_percentage',
+            'communication_skills_percentage',
+            'coding_skills'
         ]
 
-        # Categorical data to numerical data
-        for column in label_columns:
-            df[column] = label_encoder.fit_transform(df[column])
+        # Prepare features and target
+        X = df[normalize_columns]
+        y = df['suggested_career']
 
-        
+        # Label encoding for target variable
+        label_encoder = LabelEncoder()
+        y_encoded = label_encoder.fit_transform(y)
+
+        # Normalization
+        normalizer = Normalizer()
+        X_normalized = normalizer.fit_transform(X)
+
+        # Split data
+        X_train, X_test, y_train, y_test = train_test_split(
+            X_normalized, y_encoded, test_size=0.2, random_state=42)
+
+        # Train model
+        model = RandomForestClassifier()
+        model.fit(X_train, y_train)
+
+        # Initialize and train the model
+        model = RandomForestClassifier(n_estimators=100, random_state=42)
+        model.fit(X_train, y_train)
+
+        # Save model and encoders
+        joblib.dump(model, 'static/models/career_suggestion_model.pkl')
+        joblib.dump(normalizer, 'static/models/normalizer.pkl')
+        joblib.dump(label_encoder, 'static/models/label_encoder.pkl')
+
+        self.stdout.write(self.style.SUCCESS(
+            'Model and encoders saved successfully!'))

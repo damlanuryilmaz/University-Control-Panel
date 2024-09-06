@@ -88,26 +88,7 @@ class CareerSuggestion(models.Model):
         decimal_places=2,
     )
 
-    is_self_learning = models.CharField(
-        max_length=3,  # or any length that fits your choices
-        choices=YES_NO_CHOICES,
-    )
-
-    certificate = models.TextField(max_length=250)
-    interested_subject = models.TextField(max_length=100)
-    is_in_teams = models.CharField(
-        max_length=3,  # or any length that fits your choices
-        choices=YES_NO_CHOICES,
-    )
-
-    is_introvert = models.CharField(
-        max_length=3,  # or any length that fits your choices
-        choices=YES_NO_CHOICES,
-    )
-
-    suggested_career = models.TextField(max_length=100)
-
-    model_blob = models.BinaryField(blank=True, null=True)
+    suggested_career = models.CharField(max_length=100)
 
     def __str__(self):
         return self.suggested_career
