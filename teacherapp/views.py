@@ -3,14 +3,12 @@ from .forms import AddLessonForm, GradeForm, FutureCareerForm
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import render, redirect
 from django.core.paginator import Paginator
-from sklearn.metrics import accuracy_score, classification_report
 from django.http import JsonResponse
 from django.contrib import messages
-from .models import Contact, Grade, CareerSuggestion
+from .models import Contact, Grade
 from baseapp.models import Lesson
 from django.views import View
 import pandas as pd
-import numpy as np
 import joblib
 
 
@@ -206,7 +204,7 @@ class SubmitLessonsView(View):
         return redirect('selected_lessons')
 
 
-class LessonSelectView(LoginRequiredMixin, View):
+class SelectedLessonView(LoginRequiredMixin, View):
     def get(self, request):
         student = Student.objects.get(user=request.user)
         lessons = student.lessons.all()
@@ -321,10 +319,6 @@ class CourseApprovalView(LoginRequiredMixin, View):
 
 class StudentFutureView(View):
     model = None
-    normalizer = None
-    label_encoder_target = None
-    one_hot_encoder = None
-    feature_names = None
 
     def get(self, request):
         form = FutureCareerForm()
@@ -334,51 +328,34 @@ class StudentFutureView(View):
         }
 
         return render(request, 'teacherapp/student_future.html', context)
-            
-            # Create a career suggestion object
-            # form datasını kullan 
-            # studet_analysis = suggestion(data)
-            # student_analysis.save()
-            
-            # df = pd.DataFrame(student_analysis) sudo kodddur dogrusunu bulunuz.
-            # egıttıgın yere kadar anı ıslemlerı yap,
-            # opsıyonel olarak utıls yazıp her iki yerdede aynı methodlar çağırılabilir
-            # modeli loadla ve tahmın yap
-            #tahmini döndür
-            
+
     def post(self, request, *args, **kwargs):
         form = FutureCareerForm(request.POST)
         if form.is_valid():
             # Extract data from form
-            data = {
-                'operating_sys_percentage': form.cleaned_data['operating_sys_percentage'],
-                'algorithms_percentage': form.cleaned_data['algorithms_percentage'],
-                'programming_percentage': form.cleaned_data['programming_percentage'],
-                'software_eng_percentage': form.cleaned_data['software_eng_percentage'],
-                'computer_network_percentage': form.cleaned_data['computer_network_percentage'],
-                'electronics_percentage': form.cleaned_data['electronics_percentage'],
-                'computer_arc_percentage': form.cleaned_data['computer_arc_percentage'],
-                'math_percentage': form.cleaned_data['math_percentage'],
-                'communication_skills_percentage': form.cleaned_data['communication_skills_percentage'],
-                'coding_skills': form.cleaned_data['coding_skills'],
-            }
-
-            # Convert data to a numpy array and normalize
-            input_data = np.array([list(data.values())])
-            normalizer = joblib.load('static/models/normalizer.pkl')
-            input_data_normalized = normalizer.transform(input_data)
-
-            # Load the model and make a prediction
-            model = joblib.load('static/models/career_suggestion_model.pkl')
-            prediction = model.predict(input_data_normalized)
-
-            # Load the label encoder to decode the prediction
-            label_encoder = joblib.load('static/models/label_encoder.pkl')
-            suggested_career = label_encoder.inverse_transform(prediction)[0]
+            input_data = pd.DataFrame({
+                'Age': [form.cleaned_data['age']],
+                'Gender': [form.cleaned_data['gender']],
+                'Field': [form.cleaned_data['field'].name],
+                'CGPA': [form.cleaned_data['cgpa']],
+                'Internships': [form.cleaned_data['internships']],
+                'Hostel': [1 if form.cleaned_data['is_in_dorm'] else 0],
+                'HistoryOfBacklogs': [1 if form.cleaned_data[
+                    'history_of_backlogs'] else 0]
+            })
+            model = joblib.load('static/models/model.pkl')
+            prediction = model.predict(input_data)
+            probabilities = model.predict_proba(input_data)
+            probability_placed = probabilities[0][1]
+            percentage_placed = probability_placed * 100
+            result_message = f'The probability of being hired is {
+                percentage_placed:.1f}%.'
 
             context = {
                 'form': form,
-                'suggested_career': suggested_career,
+                'is_placed': prediction[0],
+                'result_message': result_message,
+
             }
 
             return render(request, 'teacherapp/student_future.html', context)
@@ -388,299 +365,3 @@ class StudentFutureView(View):
                 'form': form,
             }
             return render(request, 'teacherapp/student_future.html', context)
-
-    # def dispatch(self, request, *args, **kwargs):
-    #     # Load model and encoders
-    #     if not self.model:
-    #         self.model = joblib.load('random_forest_model.pkl')
-    #     if not self.normalizer:
-    #         self.normalizer = joblib.load('normalizer.pkl')
-    #     if not self.label_encoder_target:
-    #         self.label_encoder_target = joblib.load('label_encoder_target.pkl')
-    #     if not self.feature_names:
-    #         self.feature_names = joblib.load('feature_names.pkl')
-
-    #     return super().dispatch(request, *args, **kwargs)
-
-    # def post(self, request):
-    #     form = FutureCareerForm(request.POST)
-
-    #     if form.is_valid():
-    #         # Process the form data
-    #         form_data = {
-    #             'operating_sys_percentage': form.cleaned_data[
-    #                 'operating_sys_percentage'],
-    #             'algorithms_percentage': form.cleaned_data[
-    #                 'algorithms_percentage'],
-    #             'programming_percentage': form.cleaned_data[
-    #                 'programming_percentage'],
-    #             'software_eng_percentage': form.cleaned_data[
-    #                 'software_eng_percentage'],
-    #             'computer_network_percentage': form.cleaned_data[
-    #                 'computer_network_percentage'],
-    #             'electronics_percentage': form.cleaned_data[
-    #                 'electronics_percentage'],
-    #             'computer_arc_percentage': form.cleaned_data[
-    #                 'computer_arc_percentage'],
-    #             'math_percentage': form.cleaned_data['math_percentage'],
-    #             'communication_skills_percentage': form.cleaned_data[
-    #                 'communication_skills_percentage'],
-    #             'coding_skills': form.cleaned_data['coding_skills'],
-    #             'is_self_learning': form.cleaned_data['is_self_learning'],
-    #             'certificate': form.cleaned_data['certificate'],
-    #             'interested_subject': form.cleaned_data['interested_subject'],
-    #             'is_in_teams': form.cleaned_data['is_in_teams'],
-    #             'is_introvert': form.cleaned_data['is_introvert'],
-    #         }
-
-    #         # Prepare data for normalization and encoding
-    #         numeric_data = np.array([[form_data['operating_sys_percentage'],
-    #                                   form_data['algorithms_percentage'],
-    #                                   form_data['programming_percentage'],
-    #                                   form_data['software_eng_percentage'],
-    #                                   form_data['computer_network_percentage'],
-    #                                   form_data['electronics_percentage'],
-    #                                   form_data['computer_arc_percentage'],
-    #                                   form_data['math_percentage'],
-    #                                   form_data[
-    #                                       'communication_skills_percentage'],
-    #                                   form_data['coding_skills']]])
-
-    #         # Normalize numeric fields
-    #         normalized_data = self.normalizer.transform(numeric_data)
-
-    #         # Categorical fields for one-hot encoding
-    #         categorical_data = pd.DataFrame([{
-    #             'is_self_learning': form_data['is_self_learning'],
-    #             'certificate': form_data['certificate'],
-    #             'interested_subject': form_data['interested_subject'],
-    #             'is_in_teams': form_data['is_in_teams'],
-    #             'is_introvert': form_data['is_introvert']
-    #         }], columns=self.one_hot_encoder.get_feature_names_out())
-
-    #         # One-hot encode categorical fields
-    #         encoded_categorical_data = self.one_hot_encoder.transform(
-    #             categorical_data)
-
-    #         # Concatenate numeric and encoded categorical data
-    #         X_input = np.concatenate(
-    #             [normalized_data, encoded_categorical_data], axis=1)
-
-    #         # Make a prediction
-    #         prediction = self.model.predict(X_input)
-
-    #         # Decode the predicted career back to its original label
-    #         predicted_career = self.label_encoder_target.inverse_transform(
-    #             prediction)[0]
-
-    #         context = {
-    #             'form': form,
-    #             'predicted_career': predicted_career,
-    #         }
-
-    #         return render(request, 'teacherapp/student_future.html', context)
-
-    #     context = {
-    #         'form': form,
-    #     }
-    #     return render(request, 'teacherapp/student_future.html', context)
-
-
-# class StudentFutureView(View):
-#     def __init__(self, **kwargs):
-#         super().__init__(**kwargs)
-#         # Define columns for encoding
-#         self.ordinal_columns = ['python', 'java', 'sql']
-#         self.one_hot_columns = ['interested_domain', 'project']
-
-#     def get(self, request):
-#         df = self.get_student_data()
-#         df = self.encode_features(df)
-
-#         accuracy = self.perform_model(df)
-#         self.save_model()
-
-#         form = FutureCareerForm()
-#         print("Accuracy:", accuracy)
-
-#         context = {
-#             'form': form,
-#         }
-
-#         return render(request, 'teacherapp/student_future.html', context)
-
-#     def get_student_data(self):
-#         data = StudentCareer.objects.all().values()
-#         df = pd.DataFrame(data)
-
-#         return df
-
-#     def encode_features(self, df):
-#         # Columns to be ordinal encoded
-#         categories = (
-#             [['Weak', 'Average', 'Strong']] *
-#             len(self.ordinal_columns)
-#         )
-
-#         # Assign the ordinal columns to the ordinal encoder
-#         self.ordinal_encoder = OrdinalEncoder(categories=categories)
-#         df[self.ordinal_columns] = self.ordinal_encoder.fit_transform(
-#             df[self.ordinal_columns])
-
-#         # One-hot encoding using pd.get_dummies
-#         df = pd.get_dummies(df, columns=self.one_hot_columns)
-
-#         # Label encode the target variable
-#         self.label_encoder = LabelEncoder()
-#         df['future_career'] = self.label_encoder.fit_transform(
-#             df['future_career'])
-
-#         return df
-
-#     def perform_model(self, df):
-#         X = df.drop('future_career', axis=1)  # Features
-#         Y = df['future_career']               # Target variable
-
-#         X_train, X_test, y_train, y_test = train_test_split(
-#             X, Y, test_size=0.2, random_state=42)
-
-#         # Initializing the model
-#         self.model = RandomForestClassifier()
-#         self.model.fit(X_train, y_train)
-
-#         # Making predictions on the test set
-#         y_pred = self.model.predict(X_test)
-
-#         # Evaluating the model's performance
-#         accuracy = accuracy_score(y_test, y_pred)
-#         # print(f'Accuracy: {accuracy:.4f}')
-#         # print(classification_report(y_test, y_pred, zero_division=0))
-
-#         return accuracy
-
-#     def save_model(self):
-#         joblib.dump(self.model, 'random_forest_model.pkl')
-#         joblib.dump(self.ordinal_encoder, 'ordinal_encoder.pkl')
-#         joblib.dump(self.label_encoder, 'label_encoder.pkl')
-
-#     def post(self, request):
-#         # Load the saved model and encoders using joblib
-#         model = joblib.load('random_forest_model.pkl')
-#         ordinal_encoder = joblib.load('ordinal_encoder.pkl')
-#         label_encoder = joblib.load('label_encoder.pkl')
-
-#         form = FutureCareerForm(request.POST)
-#         if form.is_valid():
-
-#             # Gettings the form data
-#             projects = form.cleaned_data['projects']
-#             interest_domain = form.cleaned_data['interest_domain']
-#             python = form.cleaned_data['python']
-#             sql = form.cleaned_data['sql']
-#             java = form.cleaned_data['java']
-
-#             # Prepare the form data for prediction
-#             form_data = {
-#                 'interested_domain': ','.join(interest_domain),
-#                 'project': ','.join(projects),
-#                 'python': python,
-#                 'sql': sql,
-#                 'java': java
-#             }
-
-#             df_input = pd.DataFrame([form_data])
-
-#             df_input[self.ordinal_columns] = ordinal_encoder.transform(
-#                 df_input[self.ordinal_columns])
-#             df_input = pd.get_dummies(df_input, columns=self.one_hot_columns)
-
-#             # Recompute columns based on the training data
-#             df_train = self.get_student_data()  # Get training data
-#             df_train = self.encode_features(df_train)
-#             model_columns = df_train.drop(
-#                 'future_career', axis=1).columns.tolist()
-
-#             # Align columns with the training data
-#             missing_cols = set(model_columns) - set(df_input.columns)
-#             for col in missing_cols:
-#                 df_input[col] = 0
-#             df_input = df_input[model_columns]
-
-#             # Make prediction
-#             prediction = model.predict(df_input)
-#             predicted_career = label_encoder.inverse_transform(prediction)[0]
-#             print(self.perform_model(df_train))
-
-#             context = {
-#                 'form': form,
-#                 'predicted_career': predicted_career,
-#                 'accuracy': self.perform_model(df_train),
-#             }
-
-#             return render(request, 'teacherapp/student_future.html', context)
-
-#         context = {
-#             'form': form,
-#         }
-
-#         return render(request, 'teacherapp/student_future.html', context)
-
-# class FutureStudentView(View):
-#     # Show the students without department
-#     def get(self, request):
-
-#         data = StudentCareer.objects.all().values()
-#         df = pd.DataFrame(data)
-
-#         # Columns to be ordinal encoded
-#         ordinal_columns = ['python', 'java', 'sql']
-#         categories = [['Weak', 'Average', 'Strong']] * len(ordinal_columns)
-
-#         # Assign the ordinal columns to the ordinal encoder
-#         ordinal_encoder = OrdinalEncoder(categories=categories)
-#         df[ordinal_columns] = ordinal_encoder.fit_transform(
-#             df[ordinal_columns]
-#         )
-
-#         # One-hot encoding using pd.get_dummies
-#         one_hot_columns = ['interested_domain', 'project']
-#         df = pd.get_dummies(df, columns=one_hot_columns)
-
-#         label_encoder = LabelEncoder()
-#         df['future_career'] = label_encoder.fit_transform(df['future_career'
-# ])
-
-#         X = df.drop('future_career', axis=1)  # Features
-#         Y = df['future_career']               # Target variable
-
-#         X_train, X_test, y_train, y_test = train_test_split(
-#             X, Y, test_size=0.20, random_state=42)
-
-#         # Initializing the model
-#         model = RandomForestClassifier()
-#         model.fit(X_train, y_train)
-
-#         # Making predictions on the test set
-#         y_pred = model.predict(X_test)
-
-#         # Evaluating the model's performance
-#         print("Accuracy:", accuracy_score(y_test, y_pred))
-#         print(classification_report(y_test, y_pred, zero_division=0))
-
-#         joblib.dump(model, 'random_forest_model.pkl')
-#         joblib.dump(ordinal_encoder, 'ordinal_encoder.pkl')
-#         joblib.dump(label_encoder, 'label_encoder.pkl')
-
-#         # form = FutureCareerForm()
-
-#         context = {
-
-#         }
-
-#         return render(request, 'teacherapp/student_future.html', context)
-
-#     def post(self, request):
-#         # Load the saved model and encoders using pickle
-#         model = joblib.load('random_forest_model.pkl')
-#         ordinal_encoder = joblib.load('ordinal_encoder.pkl')
-#         label_encoder = joblib.load('label_encoder.pkl')

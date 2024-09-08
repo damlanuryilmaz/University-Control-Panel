@@ -35,7 +35,7 @@
 
   .capacity {
     font-size: 1rem;
-    color: #ff0000;
+    color: #0000FF;
   }
 
   .ects {
@@ -162,7 +162,7 @@
 
           function updateSchedule() {
             $.ajax({
-                url: "{% url 'update_week_table' %}",  // Adjust the URL to match your view
+                url: "{% url 'update_week_table' %}", 
                 type: "GET",
                 success: function (response) {
                     // Clear existing schedule
@@ -171,7 +171,7 @@
                     // Populate the schedule with lessons
                     response.lessons.forEach(function (lesson) {
                         var cellId = lesson.day_of_week + "-" + lesson.start_time;
-                        var sanitizedCellId = cellId.replace(/[^a-zA-Z0-9-_]/g, "");  // Ensure the ID is valid
+                        var sanitizedCellId = cellId.replace(/[^a-zA-Z0-9-_]/g, "");
                         $("#" + sanitizedCellId).text(lesson.title);
                     });
                 },
@@ -184,8 +184,6 @@
 
         // Initial population of schedule on page load
         updateSchedule();
-
-
 
           function saveCheckboxState() {
             var selectedLessons = [];
@@ -231,7 +229,7 @@
               },
             });
           }
-          setInterval(updateCapacities, 10000);
+          setInterval(updateCapacities, 1000);
 
           $("#lesson-selection-form").on("change", 'input[type="checkbox"]', function () {
             lastClickedCheckbox = $(this);

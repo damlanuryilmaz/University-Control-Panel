@@ -1,6 +1,6 @@
 from django.urls import path
 from .views import (
-    GradeView, SendMessageView, MessageView, LessonSelectView,
+    GradeView, SendMessageView, MessageView, SelectedLessonView,
     SubmitLessonsView,
     StudentFutureView,
     DeleteMessageView,
@@ -20,7 +20,7 @@ urlpatterns = [
          name='update_week_table'),
     path('sumbit_lessons/', SubmitLessonsView.as_view(),
          name='submit_lessons'),
-    path('selected_lessons/', LessonSelectView.as_view(),
+    path('selected_lessons/', SelectedLessonView.as_view(),
          name='selected_lessons'),
     path('send_message/', SendMessageView.as_view(), name='send_message'),
     path('message/', MessageView.as_view(), name='message'),

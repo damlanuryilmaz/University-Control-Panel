@@ -32,63 +32,8 @@ class Grade(models.Model):
         return f'{self.student} - {self.lesson} - {self.grade}'
 
 
-class CareerSuggestion(models.Model):
-    YES_NO_CHOICES = [
-        ('yes', 'Yes'),
-        ('no', 'No'),
-    ]
-
-    operating_sys_percentage = models.DecimalField(
-        max_digits=5,
-        decimal_places=2,
-    )
-
-    algorithms_percentage = models.DecimalField(
-        max_digits=5,
-        decimal_places=2,
-    )
-
-    programming_percentage = models.DecimalField(
-        max_digits=5,
-        decimal_places=2,
-    )
-
-    software_eng_percentage = models.DecimalField(
-        max_digits=5,
-        decimal_places=2,
-    )
-
-    computer_network_percentage = models.DecimalField(
-        max_digits=5,
-        decimal_places=2,
-    )
-
-    electronics_percentage = models.DecimalField(
-        max_digits=5,
-        decimal_places=2,
-    )
-
-    computer_arc_percentage = models.DecimalField(
-        max_digits=5,
-        decimal_places=2,
-    )
-
-    math_percentage = models.DecimalField(
-        max_digits=5,
-        decimal_places=2,
-    )
-
-    communication_skills_percentage = models.DecimalField(
-        max_digits=5,
-        decimal_places=2,
-    )
-
-    coding_skills = models.DecimalField(
-        max_digits=5,
-        decimal_places=2,
-    )
-
-    suggested_career = models.CharField(max_length=100)
+class FieldArea(models.Model):
+    name = models.CharField(max_length=255, unique=True)
 
     def __str__(self):
-        return self.suggested_career
+        return self.name

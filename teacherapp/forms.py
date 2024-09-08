@@ -1,5 +1,5 @@
 from crispy_forms.layout import Layout, Field, HTML
-from teacherapp.models import Grade, CareerSuggestion
+from teacherapp.models import FieldArea, Grade
 from crispy_forms.helper import FormHelper
 from accountapp.models import Student
 from baseapp.models import Lesson
@@ -92,68 +92,40 @@ class GradeForm(forms.ModelForm):
 
 
 class FutureCareerForm(forms.Form):
-    # Form for students to select future careers
 
-    operating_sys_percentage = forms.DecimalField(
-        max_digits=5, decimal_places=2, label="Operating System Percentage")
-    algorithms_percentage = forms.DecimalField(
-        max_digits=5, decimal_places=2, label="Algorithms Percentage")
-    programming_percentage = forms.DecimalField(
-        max_digits=5, decimal_places=2, label="Programming Percentage")
-    software_eng_percentage = forms.DecimalField(
-        max_digits=5,
-        decimal_places=2,
-        label="Software Engineering Percentage"
+    age = forms.IntegerField(label='How old are you?')
+    gender = forms.ChoiceField(label='What is your gender?', choices=[
+                               ('Male', 'Male'), ('Female', 'Female')])
+    field = forms.ModelChoiceField(
+        queryset=FieldArea.objects.all(),
+        label='Education Field',
+        empty_label="Select your field of study",
     )
-    computer_network_percentage = forms.DecimalField(
-        max_digits=5, decimal_places=2, label="Computer Network Percentage")
-    electronics_percentage = forms.DecimalField(max_digits=5, decimal_places=2,
-                                                label="Electronics Percentage")
-    computer_arc_percentage = forms.DecimalField(
-        max_digits=5,
-        decimal_places=2,
-        label="Computer Architecture Percentage"
-    )
-    math_percentage = forms.DecimalField(
-        max_digits=5,
-        decimal_places=2,
-        label="Math Percentage"
-    )
-    communication_skills_percentage = forms.DecimalField(
-        max_digits=5,
-        decimal_places=2,
-        label="Communication Skills Percentage"
-    )
-    coding_skills = forms.DecimalField(
-        max_digits=5,
-        decimal_places=2,
-        label="Coding Skills"
-    )
+    cgpa = forms.FloatField(label='What is your CGPA?',
+                            help_text='Enter your CGPA out of 10.')
+    internships = forms.IntegerField(
+        label='How many internships have you done?')
+    is_in_dorm = forms.BooleanField(label='I stay in the dormitory.',
+                                    required=False)
+    history_of_backlogs = forms.BooleanField(
+        label='I have a history of backlogs.', required=False)
 
     def clean(self):
         cleaned_data = super().clean()
-        percentage_fields = [
-            'operating_sys_percentage',
-            'algorithms_percentage',
-            'programming_percentage',
-            'software_eng_percentage',
-            'computer_network_percentage',
-            'electronics_percentage',
-            'computer_arc_percentage',
-            'math_percentage',
-            'communication_skills_percentage',
-            'coding_skills'
-        ]
+        age = cleaned_data.get('age')
+        cgpa = cleaned_data.get('cgpa')
+        internships = cleaned_data.get('internships')
 
-        for field in percentage_fields:
-            value = cleaned_data.get(field)
-            if value is not None:
-                if value < 0 or value > 100:
-                    self.add_error(
-                        field,
-                        forms.ValidationError(
-                            "Number must be between 0 and 100."
-                        )
-                    )
+        if age < 18 or age > 100:
+            self.add_error(
+                'age', "Age must be between 18 and 100.")
+
+        if cgpa < 0 or cgpa > 10:
+            self.add_error(
+                'cgpa', "CGPA must be between 0 and 10.")
+
+        if internships < 0:
+            self.add_error(
+                'internships', "Internships must be a positive number.")
 
         return cleaned_data

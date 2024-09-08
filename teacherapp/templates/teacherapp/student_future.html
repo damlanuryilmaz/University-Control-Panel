@@ -1,27 +1,43 @@
 {% extends 'base.html' %} {% load static %} {% load crispy_forms_tags %}{% block title %}My Future{% endblock title %}
-{% block content %}
+{% block css_files %}
+<style>
+  .is-placed {
+    text-align: right;
+    color: green;
+  }
+  .not-placed {
+    text-align: right;
+    color: red;
+  }
+</style>
+{% endblock css_files %} {% block content %}
 <form method="POST" action="{% url 'student_future' %}">
   {% csrf_token %}
 
   <div class="container mt-5">
     <div class="row">
-      <div class="col-md-6">
-        <h3>My Future {{ suggested_career }} | {{ accuracy_score }}</h3>
+      <div class="col-md-4">
+        <h3>Will they hire me?</h3>
+      </div>
+      <div class="col-md-8">
+        {% if is_placed %}
+        <div class="is-placed">
+          <h4>{{ result_message }}</h4>
+        </div>
+        {% else %}
+        <div class="not-placed">
+          <h4>{{ result_message }}</h4>
+        </div>
+        {% endif %}
       </div>
     </div>
     <hr />
 
     <div class="row">
-{{ form|crispy}}
+      {{ form|crispy}}
       <div class="col-md-6 mt-3">
         <button type="submit" class="btn btn-info">Predict My Future</button>
-      </div> {% comment %}
-      <div class="col-md-4">{{ form.projects|as_crispy_field }}</div>
-      <div class="col-md-4">{{ form.interest_domain|as_crispy_field }}</div>
-      <div class="col-md-4">
-        {{ form.python|as_crispy_field }} {{ form.sql|as_crispy_field }} {{ form.java|as_crispy_field }}
       </div>
-      {% endcomment %}
     </div>
   </div>
 </form>

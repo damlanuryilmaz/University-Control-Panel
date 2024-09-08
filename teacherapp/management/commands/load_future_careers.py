@@ -1,11 +1,17 @@
-from sklearn.preprocessing import LabelEncoder, OneHotEncoder, Normalizer
+
+from sklearn.discriminant_analysis import StandardScaler
 from sklearn.model_selection import train_test_split
 from django.core.management.base import BaseCommand
 from sklearn.ensemble import RandomForestClassifier
-from teacherapp.models import CareerSuggestion
+from sklearn.preprocessing import OneHotEncoder
+from sklearn.compose import ColumnTransformer
+from sklearn.metrics import accuracy_score
+from sklearn.pipeline import Pipeline
 import pandas as pd
 import joblib
 import csv
+
+from teacherapp.models import FieldArea
 
 
 class Command(BaseCommand):
@@ -14,71 +20,68 @@ class Command(BaseCommand):
     def handle(self, *args, **kwargs):
         self.train_and_save_model()
 
-    def save_model(self):
-        with open('static/data/future_career.csv', 'r') as file:
+    def save_model(self, *args, **kwargs):
+        file_path = 'static/data/data.csv'
+
+        # Open and read the CSV file
+        with open(file_path, 'r') as file:
             reader = csv.reader(file)
-            next(reader)  # Skip the header
+            next(reader)  # Skip the header row if it exists
+
             for row in reader:
-                CareerSuggestion.objects.create(
-                    operating_sys_percentage=row[0],
-                    algorithms_percentage=row[1],
-                    programming_percentage=row[2],
-                    software_eng_percentage=row[3],
-                    computer_network_percentage=row[4],
-                    electronics_percentage=row[5],
-                    computer_arc_percentage=row[6],
-                    math_percentage=row[7],
-                    communication_skills_percentage=row[8],
-                    coding_skills=row[12],
-                    suggested_career=row[38],
-                )
-        self.stdout.write(self.style.SUCCESS('Careers loaded successfully!'))
+                field_name = row[2].strip()
+
+                # Save each field name to the database
+                FieldArea.objects.get_or_create(name=field_name)
+
+        self.stdout.write(self.style.SUCCESS(
+            'Field areas imported successfully!'))
 
     def train_and_save_model(self):
-        data = CareerSuggestion.objects.all().values()
-        df = pd.DataFrame(data)
+        # Load data
+        df = pd.read_csv('static/data/data.csv')
 
-        normalize_columns = [
-            'operating_sys_percentage',
-            'algorithms_percentage',
-            'programming_percentage',
-            'software_eng_percentage',
-            'computer_network_percentage',
-            'electronics_percentage',
-            'computer_arc_percentage',
-            'math_percentage',
-            'communication_skills_percentage',
-            'coding_skills'
-        ]
+        df.isnull().sum()
 
-        # Prepare features and target
-        X = df[normalize_columns]
-        y = df['suggested_career']
+        # Feature and target variables
+        X = df.drop(columns=['PlacedOrNot'], axis=1)
+        y = df['PlacedOrNot']
 
-        # Label encoding for target variable
-        label_encoder = LabelEncoder()
-        y_encoded = label_encoder.fit_transform(y)
+        # Define the feature columns
+        numerical_features = ['Age', 'Internships',
+                              'CGPA', 'Hostel', 'HistoryOfBacklogs']
+        categorical_features = ['Gender', 'Field']
 
-        # Normalization
-        normalizer = Normalizer()
-        X_normalized = normalizer.fit_transform(X)
+        # Preprocessing pipelines for numerical and categorical data
+        numeric_transformer = Pipeline(steps=[
+            ('scaler', StandardScaler())])
 
-        # Split data
+        categorical_transformer = Pipeline(steps=[
+            ('onehot', OneHotEncoder(handle_unknown='ignore'))])
+
+        # Combine preprocessing steps
+        preprocessor = ColumnTransformer(
+            transformers=[
+                ('num', numeric_transformer, numerical_features),
+                ('cat', categorical_transformer, categorical_features)])
+
+        # Create and train the model
+        model = Pipeline(steps=[
+            ('preprocessor', preprocessor),
+            ('classifier', RandomForestClassifier(random_state=42))])
+
         X_train, X_test, y_train, y_test = train_test_split(
-            X_normalized, y_encoded, test_size=0.2, random_state=42)
-
-        # Train model
-        model = RandomForestClassifier()
+            X, y, test_size=0.2, random_state=42)
         model.fit(X_train, y_train)
 
-        # Initialize and train the model
-        model = RandomForestClassifier(n_estimators=100, random_state=42)
-        model.fit(X_train, y_train)
+        predictions = model.predict(X_test)
 
-        # Save model and encoders
-        joblib.dump(model, 'static/models/career_suggestion_model.pkl')
-        joblib.dump(normalizer, 'static/models/normalizer.pkl')
-        joblib.dump(label_encoder, 'static/models/label_encoder.pkl')
+        # Calculate accuracy
+        accuracy = accuracy_score(y_test, predictions)
+        print(f'Accuracy: {accuracy:.2f}')
+
+        # Save the model
+        joblib.dump(model, 'static/models/model.pkl')
 
         self.stdout.write(self.style.SUCCESS(
             'Model and encoders saved successfully!'))
