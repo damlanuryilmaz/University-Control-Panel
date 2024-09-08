@@ -20,10 +20,19 @@
         <button class="btn btn-outline-secondary btn-sm" id="collapse-all">Collapse All</button>
       </div>
     </div>
-
+    <div class="col-md-6">
+          {% if messages %}
+      
+        {% for message in messages %}
+        <div class="alert alert-dismissible alert-success" role="success">{{ message }}</div>
+        {% endfor %}
+      
+      {% endif %}
+    </div>
+    {% if students %}
     <div class="accordion" id="accordionExample">
       {% for student in students %}
-      <form method="POST" action="{% url 'submit_lessons' %}">
+      <form method="POST" action="{% url 'course_approval' %}">
         {% csrf_token %}
         <div class="accordion-item">
           <h2 class="accordion-header" id="heading{{ forloop.counter }}">
@@ -38,6 +47,7 @@
               {{ student.user.first_name }} {{ student.user.last_name }}
             </button>
           </h2>
+          <input type="hidden" name="student" value="{{ student.id }}" />
           <div id="collapse{{ forloop.counter }}" class="accordion-collapse collapse">
             <div class="accordion-body">
               <ul class="list-group list-group-flush">
@@ -54,6 +64,11 @@
       </form>
       {% endfor %}
     </div>
+    {% else %}
+    <div class="col-md-2 alert alert-light" role="alert">
+      <strong>No students found.</strong>
+    </div>
+    {% endif %}
   </div>
 </div>
 

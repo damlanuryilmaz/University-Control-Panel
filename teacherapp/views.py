@@ -6,6 +6,7 @@ from django.core.paginator import Paginator
 from django.http import JsonResponse
 from django.contrib import messages
 from .models import Contact, Grade
+from django.db import transaction
 from baseapp.models import Lesson
 from django.views import View
 import pandas as pd
@@ -118,35 +119,39 @@ class LessonSelectionView(LoginRequiredMixin, View):
             to_remove = existing_lessons - new_lessons
 
             updated_lessons = []
-            for lesson_id in to_add:
-                lesson = Lesson.objects.get(id=lesson_id)
-                if lesson.capacity > 0:
-                    lesson.capacity -= 1
-                    lesson.save()
-                    StudentLesson.objects.create(
-                        students=student,
-                        lessons=lesson)
-                else:
-                    return JsonResponse({
-                        'success': False,
-                        'message': f'Course capacity is full: {lesson.title}'
-                    }, status=400)
-                updated_lessons.append({
-                    'id': lesson.id,
-                    'title': lesson.title,
-                    'capacity': lesson.capacity
-                })
 
-            for lesson_id in to_remove:
-                lesson = Lesson.objects.get(id=lesson_id)
-                lesson.capacity += 1
-                lesson.save()
-                StudentLesson.objects.filter(
-                    students=student, lessons_id=lesson_id).delete()
-                updated_lessons.append({
-                    'id': lesson.id,
-                    'title': lesson.title,
-                    'capacity': lesson.capacity})
+            with transaction.atomic():
+                for lesson_id in to_add:
+                    lesson = Lesson.objects.select_for_update().get(
+                        id=lesson_id)
+                    if lesson.capacity > 0:
+                        lesson.capacity -= 1
+                        lesson.save()
+                        StudentLesson.objects.create(
+                            students=student,
+                            lessons=lesson)
+                    else:
+                        return JsonResponse({
+                            'success': False,
+                            'message': f'Course capacity is full: {
+                                lesson.title}'
+                        }, status=400)
+                    updated_lessons.append({
+                        'id': lesson.id,
+                        'title': lesson.title,
+                        'capacity': lesson.capacity
+                    })
+
+                for lesson_id in to_remove:
+                    lesson = Lesson.objects.get(id=lesson_id)
+                    lesson.capacity += 1
+                    lesson.save()
+                    StudentLesson.objects.filter(
+                        students=student, lessons_id=lesson_id).delete()
+                    updated_lessons.append({
+                        'id': lesson.id,
+                        'title': lesson.title,
+                        'capacity': lesson.capacity})
 
             selected_lessons = [{
                 'id': lesson.id,
@@ -267,7 +272,7 @@ class MessageView(LoginRequiredMixin, View):
     def get(self, request):
         messages_list = Contact.objects.filter(
             teacher=request.user.id)
-        paginator = Paginator(messages_list, 5)
+        paginator = Paginator(messages_list, 10)
         page_number = request.GET.get('page')
         messages_from_student = paginator.get_page(page_number)
 
@@ -308,13 +313,23 @@ class CourseApprovalView(LoginRequiredMixin, View):
     def post(self, request):
         student_id = request.POST.get('student')
         student = Student.objects.get(id=student_id)
-        StudentLesson.objects.delete(students=student)
-        student.is_approved = True
-        student.acts = 0
+        deleted_studentlesson = StudentLesson.objects.filter(students=student)
 
+        for student_lesson in deleted_studentlesson:
+            lesson = student_lesson.lessons
+            lesson.capacity += 1
+            lesson.save()
+
+        messages.success(
+                request, "The student's course selection has been reset.")
+
+        deleted_studentlesson.delete()
+
+        student.is_submitted = False
+        student.acts = 0
         student.save()
 
-        return JsonResponse({'success': True})
+        return redirect('course_approval')
 
 
 class StudentFutureView(View):

@@ -13,6 +13,11 @@
       {% else %}
       <p class="card-text mb-3"><strong>Department:</strong> {{ student.department }}</p>
       {% endif %}  
+      {% elif user.status == 'Teacher' %}
+      <p>Advisee Students:</p>
+      {% for student in students %}
+      <p>{{ student}}</p>
+      {% endfor %}
       {% endif %}
     </div>
   </div>

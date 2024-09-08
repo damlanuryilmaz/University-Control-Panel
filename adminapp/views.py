@@ -2,12 +2,16 @@ from .forms import DepartmentRequestForm, AssignAdviserForm
 from django.contrib.auth.mixins import LoginRequiredMixin
 from accountapp.models import Student, Teacher
 from django.shortcuts import render, redirect
+from django.core.paginator import Paginator
 from django.views import View
 
 
 class DepartmentRequest(LoginRequiredMixin, View):
     def get(self, request):
-        students = Student.objects.filter(department_request=True)
+        students_list = Student.objects.filter(department_request=True)
+        paginator = Paginator(students_list, 10)
+        page_number = request.GET.get('page')
+        students = paginator.get_page(page_number)
         form = DepartmentRequestForm()
 
         context = {
@@ -48,7 +52,10 @@ class DepartmentRequest(LoginRequiredMixin, View):
 
 class AssignAdviser(LoginRequiredMixin, View):
     def get(self, request):
-        students_wo_adviser = Student.objects.filter(adviser=None)
+        students_wo_adviser_list = Student.objects.filter(adviser=None)
+        paginator = Paginator(students_wo_adviser_list, 10)
+        page_number = request.GET.get('page')
+        students_wo_adviser = paginator.get_page(page_number)
         form = AssignAdviserForm()
         teachers = Teacher.objects.all()
 
@@ -73,4 +80,4 @@ class AssignAdviser(LoginRequiredMixin, View):
             student.adviser = form.cleaned_data['adviser']
             student.save()
 
-        return redirect('department_request')
+        return redirect('assign_adviser')

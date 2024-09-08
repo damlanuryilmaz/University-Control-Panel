@@ -18,7 +18,7 @@ urlpatterns = [
          name='update_capacity'),
     path('update_week_table/', UpdateWeekTableView.as_view(),
          name='update_week_table'),
-    path('sumbit_lessons/', SubmitLessonsView.as_view(),
+    path('submit_lessons/', SubmitLessonsView.as_view(),
          name='submit_lessons'),
     path('selected_lessons/', SelectedLessonView.as_view(),
          name='selected_lessons'),

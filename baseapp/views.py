@@ -27,6 +27,7 @@ class IndexView(LoginRequiredMixin, View):  # Main page
 
         elif user.status == 'Teacher':
             teacher = Teacher.objects.get(user=request.user)
+            students = Student.objects.filter(adviser=teacher)
             lessons_with_student_count = [
                 {'lesson': lesson, 'student_count': lesson.student_set.count()}
                 for lesson in teacher.lessons.all()
@@ -35,12 +36,14 @@ class IndexView(LoginRequiredMixin, View):  # Main page
             context = {
                 'user': user,
                 'teacher': teacher,
+                'students': students,
                 'lessons_with_student_count': lessons_with_student_count,
             }
             return render(request, 'baseapp/index.html', context)
 
         elif user.status == 'Admin':
-            students_wo_department = Student.objects.filter(department=None)
+            students_wo_department = Student.objects.filter(
+                department_request=True)
             students_wo_adviser = Student.objects.filter(adviser=None)
             context = {
                 'user': user,
@@ -82,7 +85,7 @@ class DepartmentRequestView(LoginRequiredMixin, View):
     # Send a request to any teacher
 
     def post(self, request):
-        student = Student.objects.get(user__username=request.user.username)
+        student = Student.objects.get(user=request.user)
         student.department_request = True
         student.save()
 
