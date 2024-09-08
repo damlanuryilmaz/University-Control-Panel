@@ -2,6 +2,8 @@ University Control Panel
 
 Using Django Framework. Ajax and JQuery technologies.
 Written in HTML, CSS, JavaScript and Python.
+Has a Machine Learning page that can predict if student can be hired or not.
+Using RandomForest as a model.
 
 Has pages for student, teacher and admin.
 Students can choose courses, send messages to their teacher.
