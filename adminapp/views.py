@@ -3,6 +3,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from accountapp.models import Student, Teacher
 from django.shortcuts import render, redirect
 from django.core.paginator import Paginator
+from django.contrib import messages
 from django.views import View
 
 
@@ -79,5 +80,16 @@ class AssignAdviser(LoginRequiredMixin, View):
             student = Student.objects.get(id=student_id)
             student.adviser = form.cleaned_data['adviser']
             student.save()
+            return redirect('assign_adviser')
+        else:
+            students_wo_adviser = Student.objects.filter(adviser=None)
+            teachers = Teacher.objects.all()
 
-        return redirect('assign_adviser')
+            context = {
+                'students_wo_adviser': students_wo_adviser,
+                'form': form,
+                'teacher': teachers,
+            }
+            return render(request,
+                          "adminapp/assign_adviser.html",
+                          context)

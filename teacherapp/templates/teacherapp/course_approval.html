@@ -56,7 +56,8 @@
                 {% endif %} {% endfor %}
               </ul>
               <div class="d-flex justify-content-end">
-                <button type="submit" class="btn btn-danger">Delete All</button>
+                <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete all courses?')"
+                >Delete All</button>
               </div>
             </div>
           </div>
