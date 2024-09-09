@@ -21,8 +21,7 @@ class RegisterView(View):  # RegisterView from UserCreationForm
         if form.is_valid():
             user = form.save()
             Student.objects.create(user=user)
-            request.session['registration_success'] = (
-                'User created successfully.')
+            messages.success(request, 'Registration Successful.')
             return redirect('login')
         else:
             context = {
@@ -39,9 +38,6 @@ class LoginView(View):  # LoginView from AuthenticationForm
             'form': form
         }
 
-        if 'registration_success' in request.session:
-            messages.success(request, request.session['registration_success'])
-            del request.session['registration_success']
         return render(request, 'accountapp/login_page.html', context)
 
     def post(self, request):

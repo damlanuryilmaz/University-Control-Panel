@@ -332,7 +332,7 @@ class CourseApprovalView(LoginRequiredMixin, View):
         return redirect('course_approval')
 
 
-class StudentFutureView(View):
+class StudentFutureView(LoginRequiredMixin, View):
     model = None
 
     def get(self, request):
